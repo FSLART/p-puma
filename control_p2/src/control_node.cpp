@@ -56,7 +56,19 @@ ControlP2::ControlP2() : Node("control_node")
 
 void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
 {
-    // state logic for control
+    switch (msg->data)
+    {
+    case lart_msgs::msg::State::DRIVING:
+        /* code */
+        break;
+    case lart_msgs::msg::State::FINISH:
+    case lart_msgs::msg::State::EMERGENCY:
+        this->cleanUp();
+        break;
+    
+    default:
+        break;
+    }
 }
 
 void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)

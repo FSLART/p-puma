@@ -57,9 +57,7 @@ protected:
 
     // Functions
     void ControlP2::dispatchDynamicsCMD();
-    void ControlP2::cleanUp();
-    
-    
+    void ControlP2::cleanUp();  
 
 };
 

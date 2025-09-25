@@ -5,62 +5,49 @@ using std::placeholders::_1;
 ControlP2::ControlP2() : Node("control_node")
 {
     /*------------------------------------------------------------------------------*/
-    /*                                    TOPICS                                    */
+    /*                                    FLAGS                                     */
     /*------------------------------------------------------------------------------*/
 
-    this->declare_parameter(PARAMS_TOPIC_PATH, "/planned_path_topic");
-	this->get_parameter(PARAMS_TOPIC_PATH, path_topic);
-
-    this->declare_parameter(PARAMS_TOPIC_SPEED, "/acu_origin/dynamics");
-	this->get_parameter(PARAMS_TOPIC_SPEED, rpm_topic);
-
-    this->declare_parameter(PARAMS_TOPIC_DYNAMICS_CMD, "pc_origin/dynamics");
-	this->get_parameter(PARAMS_TOPIC_DYNAMICS_CMD, dynamics_cmd_topic);
-
-    this->declare_parameter(PARAMS_TOPIC_STATE, "/pc_origin/system_status/critical_as/state");
-    this->get_parameter(PARAMS_TOPIC_STATE, state_topic);
-
-    this->declare_parameter(PARAMS_TOPIC_MISSION, "pc_origin/system_status/critical_as/mission");
-    this->get_parameter(PARAMS_TOPIC_MISSION, mission_topic);
-
-    this->declare_parameter(PARAMS_TOPIC_SLAM, "/ekf/state");
-    this->get_parameter(PARAMS_TOPIC_SLAM, slam_topic);
+    // ADD FLAGS GETTERS
 
 
     /*------------------------------------------------------------------------------*/
     /*                                   PUBLISHERS                                 */
     /*------------------------------------------------------------------------------*/
     
-    dynamics_publisher = this->create_publisher<lart_msgs::msg::DynamicsCMD>(dynamics_cmd_topic, 10);
+    dynamics_publisher = this->create_publisher<lart_msgs::msg::DynamicsCMD>(TOPIC_DYNAMICS_CMD, 10);
 
     /*------------------------------------------------------------------------------*/
     /*                                  SUBSCRIBERS                                 */
     /*------------------------------------------------------------------------------*/
 
     subscription_path = this->create_subscription<lart_msgs::msg::PathSpline>(
-        path_topic, 10, std::bind(&SpacNode::path_callback, this, _1));
+        TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));
 
     subscription_speed = this->create_subscription<lart_msgs::msg::Dynamics>(
-        current_speed_topic, 10, std::bind(&SpacNode::speed_callback, this, _1));
+        TOPIC_SPEED, 10, std::bind(&ControlP2::speed_callback, this, _1));
 
     state_subscriber = this->create_subscription<lart_msgs::msg::State>(
-        state_topic, 10, std::bind(&SpacNode::state_callback, this, _1));
+        TOPIC_STATE, 10, std::bind(&ControlP2::state_callback, this, _1));
 
     mission_subscriber = this->create_subscription<lart_msgs::msg::Mission>(
-        mission_topic, 10, std::bind(&SpacNode::mission_callback, this, _1));
+        TOPIC_MISSION, 10, std::bind(&ControlP2::mission_callback, this, _1));
 
     ekf_subscriber = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-        slam_topic, 10, std::bind(&SpacNode::ekf_callback, this, _1));
+        TOPIC_SLAM, 10, std::bind(&ControlP2::ekf_callback, this, _1));
 
 }
 
 void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
 {
+    RCLCPP_INFO(this->get_logger(), "State callback received: %d", msg->data);
+
     switch (msg->data)
     {
     case lart_msgs::msg::State::DRIVING:
         /* code */
         break;
+
     case lart_msgs::msg::State::FINISH:
     case lart_msgs::msg::State::EMERGENCY:
         this->cleanUp();
@@ -73,7 +60,19 @@ void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
 
 void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
 {
-    // mission logic for control
+
+    RCLCPP_INFO(this->get_logger(), "Mission received: %d", msg->data);
+
+    switch(msg->data){
+        case lart_msgs::msg::Mission::ACCELERATION:
+            this->target->set_mission(this->acc_speed);
+            break;
+        case lart_msgs::msg::Mission::EBS_TEST:
+            this->target->set_mission(this->ebs_speed);
+            break;
+        default:
+            break;
+    }
 }
 
 void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)
@@ -86,6 +85,11 @@ void ControlP2::speed_callback(const lart_msgs::msg::Dynamics::SharedPtr msg)
     // save current speed
 }
 
+void ControlP2::ekf_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+{
+    // save current position from ekf
+}   
+
 void ControlP2::dispatchDynamicsCMD()
 {
     // publish dynamics command
@@ -93,8 +97,13 @@ void ControlP2::dispatchDynamicsCMD()
 
 void ControlP2::cleanUp()
 {
-    // Send message of zero speed and zero steering angle
-    // Useful at the end of the program and emergency situations
+    RCLCPP_INFO(this->get_logger(), "Cleaning up");
+    lart_msgs::msg::DynamicsCMD cleanUpMailBox = lart_msgs::msg::DynamicsCMD();
+    cleanUpMailBox.rpm = 0;
+    cleanUpMailBox.steering_angle = 0.0;
+
+    this->dynamics_publisher->publish(cleanUpMailBox);
+
 }
 
 int main(int argc, char *argv[])
@@ -104,3 +113,6 @@ int main(int argc, char *argv[])
     rclcpp::shutdown();
     return 0;
 }
+
+
+// ADICIONAR TESTES UNITARIOS !!!! VAI SER DO CARAÇAS COM UMA INTERFACE QUE E GENERICA !!!!!

@@ -8,13 +8,17 @@
 class Target{
     public:
         Target(float mission_speed);
+        void set_ready();
+        void set_maxSpeed(float speed);
     private:
         Pursuit_Algorithm algorithm;
     protected:
         // Parameters
-        float mission_speed;
+        float missionSpeed;
         bool ready = false;
-        bool mission_set = false;
+        bool missionSet = false;
+        uint8_t currentSpeed;
+        float currentSteering;
 
     
 };

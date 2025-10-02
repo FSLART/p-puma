@@ -1,13 +1,13 @@
-#include "control_p2/target.hpp"
+#include "control_p2/control_manager.hpp"
 
-Target::Target(float mission_speed){
+ControlManager::ControlManager(float mission_speed){
     this->algorithm = Pursuit_Algorithm();
     this->mission_speed = mission_speed;
 }
 
-lart_msgs::msg::DynamicsCMD Target::getDynamicsCMD(){
-    
-    if(this->ready && this->mission_set){
+lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
+
+    if(this->ready && this->missionSet){
 
         // float steeringAngle = calculate_steeringAngle(this->path, this->currentPose);
         // float speed = calculate_speed(/* PARAMETERS */);
@@ -22,25 +22,25 @@ lart_msgs::msg::DynamicsCMD Target::getDynamicsCMD(){
     }
 }
 
-void Target::set_ready(){
+void ControlManager::set_ready(){
     this->ready = true;
 }
 
-void Target::set_maxSpeed(float speed){
+void ControlManager::set_maxSpeed(float speed){
     this->missionSpeed = speed;
     this->missionSet = true;
 }
 
-void Target::set_path(lart_msgs::msg::PathSpline path){
+void ControlManager::set_path(lart_msgs::msg::PathSpline path){
     this->currentPath = path;
 }
 
-void Target::set_dynamics(lart_msgs::msg::Dynamics dynamics){
+void ControlManager::set_dynamics(lart_msgs::msg::Dynamics dynamics){
     this->currentSpeed = dynamics.rpm;
     this->currentSteering = dynamics.steering_angle;
 }
 
-void Target::set_pose(geometry_msgs::msg::PoseStamped pose){
+void ControlManager::set_pose(geometry_msgs::msg::PoseStamped pose){
     this->currentPose = pose;
 }
 

@@ -3,9 +3,9 @@
 
 #include "math/pure_pursuit.hpp"
 
-class Target{
+class ControlManager {
     public:
-        Target(float mission_speed);
+        ControlManager(float mission_speed);
         void set_ready();
         void set_maxSpeed(float speed);
     private:

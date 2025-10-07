@@ -1,21 +1,15 @@
 #include "control_p2/control_manager.hpp"
 
 ControlManager::ControlManager(float mission_speed){
-    this->algorithm = Pursuit_Algorithm();
-    this->mission_speed = mission_speed;
+    this->algorithm = Pursuit_Algorithm(mission_speed);
 }
 
 lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
 
     if(this->ready && this->missionSet){
 
-        // float steeringAngle = calculate_steeringAngle(this->path, this->currentPose);
-        // float speed = calculate_speed(/* PARAMETERS */);
-
         lart_msgs::msg::DynamicsCMD controlOutput = algorithm.calculate_control(this->currentPath, 
             this->currentPose, this->currentSpeed, this->currentSteering, this->missionSpeed);
-        
-        //make if for option of getting speed from path planner
 
         return controlOutput;
 

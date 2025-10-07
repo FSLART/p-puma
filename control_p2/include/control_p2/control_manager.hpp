@@ -1,10 +1,11 @@
 #ifndef TARGET_H_
 #define TARGET_H_
 
-#include "math/pure_pursuit.hpp"
+#include "options.hpp"
+#include ALGORITHM
 
 class ControlManager {
-    public:
+    public: 
         ControlManager(float mission_speed);
         void set_ready();
         void set_maxSpeed(float speed);
@@ -12,7 +13,6 @@ class ControlManager {
         Pursuit_Algorithm algorithm;
     protected:
         // Parameters
-        float missionSpeed;
         bool ready = false;
         bool missionSet = false;
         uint8_t currentSpeed;

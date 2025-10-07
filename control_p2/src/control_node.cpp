@@ -41,6 +41,13 @@ ControlP2::ControlP2() : Node("control_node")
     /*------------------------------------------------------------------------------*/
     target = new Target(/* PARAMETERS */);
 
+
+    /*------------------------------------------------------------------------------*/
+    /*                                VEHICLE MODEL                                 */
+    /*------------------------------------------------------------------------------*/
+
+    LoadVehicleConfig("config/vehicle_config.yaml", this->vehicle_config);
+
 }
 
 void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
@@ -107,6 +114,16 @@ void ControlP2::dispatchDynamicsCMD()
 {
     // publish dynamics command
 }
+
+void ControlP2::LoadVehicleConfig(std::string filepath, VehicleConfig &config)
+{
+    // Load vehicle configuration from YAML file
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to open vehicle config file: %s", filepath.c_str());
+        return;
+    }
+    
 
 void ControlP2::cleanUp()
 {

@@ -5,12 +5,21 @@
 /*                                   INCLUDES                                   */
 /*------------------------------------------------------------------------------*/
 
+//OPTIONS
+#include "options.hpp"
+
+//Custom msgs
 #include "lart_msgs/msg/dynamics_cmd.hpp"
 #include "lart_msgs/msg/dynamics.hpp"
 #include "lart_msgs/msg/path_spline.hpp"
 #include "lart_msgs/msg/state.hpp"
 #include "lart_msgs/msg/mission.hpp"
+
+// Common values
 #include "lart_common.h"
+
+// Vehicle Config
+#include MODEL
 
 /*------------------------------------------------------------------------------*/
 /*                                   TOPICS                                     */

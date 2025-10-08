@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.8)
 project(control_p2)
 
 set(library_name control_p2)
-set(lib_srcs src/control_node.cpp)
+set(lib_srcs
+  src/control_node.cpp
+  src/control_manager.cpp
+)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)

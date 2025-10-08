@@ -21,8 +21,7 @@ void ControlManager::set_ready(){
 }
 
 void ControlManager::set_maxSpeed(float speed){
-    this->missionSpeed = speed;
-    this->missionSet = true;
+    
 }
 
 void ControlManager::set_path(lart_msgs::msg::PathSpline path){
@@ -36,6 +35,26 @@ void ControlManager::set_dynamics(lart_msgs::msg::Dynamics dynamics){
 
 void ControlManager::set_pose(geometry_msgs::msg::PoseStamped pose){
     this->currentPose = pose;
+}
+
+void ControlManager::set_mission(lart_msgs::msg::Mission mission){
+    this->missionSet = true;
+
+    switch(mission.data){
+        case lart_msgs::msg::Mission::SKIDPAD:
+        case lart_msgs::msg::Mission::AUTOCROSS:
+        case lart_msgs::msg::Mission::TRACKDRIVE:
+            this->missionSpeed = DEFAULT_MAX_SPEED;
+            break;
+        case lart_msgs::msg::Mission::ACCELERATION:
+            this->missionSpeed = ACC_SPEED;
+            break;
+        case lart_msgs::msg::Mission::EBS_TEST:
+            this->missionSpeed = EBS_SPEED;
+            break;
+        default:
+            break;
+    }
 }
 
 

@@ -67,22 +67,7 @@ void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
 {
 
     RCLCPP_INFO(this->get_logger(), "Mission received: %d", msg->data);
-
-    switch(msg->data){
-        case lart_msgs::msg::Mission::SKIDPAD:
-        case lart_msgs::msg::Mission::AUTOCROSS:
-        case lart_msgs::msg::Mission::TRACKDRIVE:
-            this->control_manager->set_maxSpeed(this->max_speed);
-            break;
-        case lart_msgs::msg::Mission::ACCELERATION:
-            this->control_manager->set_maxSpeed(this->acc_speed);
-            break;
-        case lart_msgs::msg::Mission::EBS_TEST:
-            this->control_manager->set_maxSpeed(this->ebs_speed);
-            break;
-        default:
-            break;
-    }
+    this->control_manager->set_mission(*msg);
 }
 
 void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)

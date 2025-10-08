@@ -2,7 +2,7 @@
 #define TARGET_H_
 
 #include "options.hpp"
-#include ALGORITHM
+#include "math/pure_pursuit.hpp"
 
 class ControlManager {
     public: 

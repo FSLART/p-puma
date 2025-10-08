@@ -8,7 +8,11 @@ class ControlManager {
     public: 
         ControlManager();
         void set_ready();
-        void set_maxSpeed(float speed);
+        void set_path(lart_msgs::msg::PathSpline path);
+        void set_dynamics(lart_msgs::msg::Dynamics dynamics);
+        void set_pose(geometry_msgs::msg::PoseStamped pose);
+        void set_mission(lart_msgs::msg::Mission mission);
+        
     private:
         Pursuit_Algorithm algorithm;
     protected:

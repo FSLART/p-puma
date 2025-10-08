@@ -20,10 +20,6 @@ void ControlManager::set_ready(){
     this->ready = true;
 }
 
-void ControlManager::set_maxSpeed(float speed){
-    
-}
-
 void ControlManager::set_path(lart_msgs::msg::PathSpline path){
     this->currentPath = path;
 }

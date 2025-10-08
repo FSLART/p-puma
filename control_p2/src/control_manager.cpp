@@ -6,14 +6,19 @@ ControlManager::ControlManager(){
 
 lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
 
-    if(this->ready && this->missionSet){
+    lart_msgs::msg::DynamicsCMD controlOutput;
 
-        lart_msgs::msg::DynamicsCMD controlOutput = algorithm.calculate_control(this->currentPath, 
-            this->currentPose, this->currentSpeed, this->currentSteering, this->missionSpeed);
-
+    if(!this->ready && !this->missionSet){
+        // If not ready or mission not set, return zero commands
+        controlOutput.rpm = 0;
+        controlOutput.steering_angle = 0.0f;
         return controlOutput;
-
     }
+
+    controlOutput = algorithm.calculate_control(this->currentPath, 
+        this->currentPose, this->currentSpeed, this->currentSteering, this->missionSpeed);
+    return controlOutput;
+    
 }
 
 void ControlManager::set_ready(){

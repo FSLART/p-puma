@@ -22,6 +22,9 @@ class Pursuit_Algorithm {
         float speed_to_lookahead(float speed);
         optional<array<float, 2>> get_closest_point(vector<array<float, 2>> path_points, float look_ahead_distance);
         int fastRound(float x);
+        float calculate_desiredSpeed(lart_msgs::msg::PathSpline path);
+        void keepAvgAngle(float new_angle);
+        float getAvgAngle();
         
         // Parameters
         int closest_point_index = -1;

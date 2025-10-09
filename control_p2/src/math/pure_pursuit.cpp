@@ -144,3 +144,8 @@ float Pursuit_Algorithm::getAvgAngle(){
     }
     return sum / interval;
 }
+
+void Pursuit_Algorithm::set_target_point(std::array<float, 2> closest_point)
+{
+    this->target_point = closest_point;
+}

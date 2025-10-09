@@ -25,6 +25,7 @@ class Pursuit_Algorithm {
         float calculate_desiredSpeed(lart_msgs::msg::PathSpline path);
         void keepAvgAngle(float new_angle);
         float getAvgAngle();
+        void set_target_point(array<float, 2> closest_point);
         
         // Parameters
         int closest_point_index = -1;

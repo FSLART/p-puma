@@ -1,7 +1,7 @@
 #include "control_p2/math/pure_pursuit.hpp"
 
-Pursuit_Algorithm::Pursuit_Algorithm(){
-    // Constructor
+Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed){
+    this->missionSpeed = missionSpeed;
 }
 
 lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped current_pose,

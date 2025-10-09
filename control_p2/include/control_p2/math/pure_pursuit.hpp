@@ -13,7 +13,7 @@ using namespace std;
 
 class Pursuit_Algorithm {
     public:
-        Pursuit_Algorithm();
+        Pursuit_Algorithm(float missionSpeed);
         lart_msgs::msg::DynamicsCMD calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped pose,
              float current_speed, float current_steering, float mission_speed);
     private:
@@ -33,7 +33,6 @@ class Pursuit_Algorithm {
         float avg_angle[SIZE_AVG_ARRAY] = {0};
         int cycles = 0;
         array<float, 2> target_point;
-        
         float missionSpeed;
         
 };

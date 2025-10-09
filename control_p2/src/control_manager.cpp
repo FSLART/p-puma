@@ -15,7 +15,7 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
     }
 
     controlOutput = algorithm.calculate_control(this->currentPath, 
-        this->currentPose, this->currentSpeed, this->currentSteering, this->missionSpeed);
+        this->currentPose, this->currentSpeed, this->currentSteering);
     return controlOutput;
     
 }

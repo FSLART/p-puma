@@ -5,7 +5,7 @@ Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed){
 }
 
 lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped current_pose,
-             float current_speed, float current_steering, float mission_speed){
+             float current_speed, float current_steering){
     //Declare variable to return
     lart_msgs::msg::DynamicsCMD control_output;
     

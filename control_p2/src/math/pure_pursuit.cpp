@@ -113,6 +113,10 @@ int Pursuit_Algorithm::fastRound(float x) {
 float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path){
     if(closest_point_index > -1){
         float curvature = abs(path.curvature[closest_point_index]);
+        
+        if(curvature < 0.0001){
+            curvature = 0.0001; // Avoid division by zero
+        }
 
         float velocity = sqrt(this->grip_coefficient * LART_GRAVITY * (1/curvature));
         

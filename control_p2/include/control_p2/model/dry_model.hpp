@@ -7,7 +7,7 @@ class DryModel : public VehicleConfig {
     public:
         DryModel(): VehicleConfig() {
             // Set dry-specific parameters
-            this->set_grip_coefficient(1.9f);
+            this->set_grip_coefficient(1.0f);
             this->set_max_speed(30.0f);  // Example value for dry conditions
         }
 };

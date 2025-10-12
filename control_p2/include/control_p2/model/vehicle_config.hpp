@@ -1,7 +1,7 @@
 #ifndef VEHICLE_CONFIG_H_
 #define VEHICLE_CONFIG_H_
 
-class abstract VehicleConfig {
+class VehicleConfig {
     private:
         // Physical Dimensions
         float wheelbase;                    // Distance between front and rear axles [m]

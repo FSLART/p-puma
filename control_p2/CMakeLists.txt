@@ -18,6 +18,7 @@ find_package(rclcpp REQUIRED)
 find_package(lart_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(GTest REQUIRED) # <-- Add this for GoogleTest
 
 include_directories(
   include
@@ -46,5 +47,22 @@ install(TARGETS
 install(DIRECTORY include/
   DESTINATION include
 )
+
+# ------------------- UNIT TESTS -------------------
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  
+  ament_add_gtest(test_manager ../test/test_manager.cpp)
+  target_link_libraries(test_manager ${library_name})
+  ament_target_dependencies(test_manager rclcpp lart_msgs tf2 tf2_geometry_msgs)
+  
+  ament_add_gtest(test_node ../test/test_node.cpp)
+  target_link_libraries(test_node ${library_name})
+  ament_target_dependencies(test_node rclcpp lart_msgs tf2 tf2_geometry_msgs)
+  
+  ament_add_gtest(test_plan ../test/test_plan.cpp)
+  target_link_libraries(test_plan ${library_name})
+  ament_target_dependencies(test_plan rclcpp lart_msgs tf2 tf2_geometry_msgs)
+endif()
 
 ament_package()

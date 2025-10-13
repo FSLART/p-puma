@@ -13,15 +13,15 @@
 TEST(ControlManagerTest, Initialization) {
     ControlManager manager;
     // Should be not ready and no mission set
-    ASSERT_FALSE(manager.ready);
-    ASSERT_FALSE(manager.missionSet);
+    ASSERT_FALSE(manager.is_ready());
+    ASSERT_FALSE(manager.is_missionSet());
 }
 
 // Test setting ready
 TEST(ControlManagerTest, SetReady) {
     ControlManager manager;
     manager.set_ready();
-    ASSERT_TRUE(manager.ready);
+    ASSERT_TRUE(manager.is_ready());
 }
 
 // Test setting mission

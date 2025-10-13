@@ -13,6 +13,8 @@ class ControlManager {
         void set_pose(geometry_msgs::msg::PoseStamped pose);
         void set_mission(lart_msgs::msg::Mission mission);
         lart_msgs::msg::DynamicsCMD getDynamicsCMD();
+        bool is_ready();
+        bool is_missionSet();
 
     private:
         Pursuit_Algorithm *algorithm;

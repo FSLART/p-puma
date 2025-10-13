@@ -59,7 +59,13 @@ void ControlManager::set_mission(lart_msgs::msg::Mission mission){
 
 }
 
+bool ControlManager::is_ready(){
+    return this->ready;
+}
 
+bool ControlManager::is_missionSet(){
+    return this->missionSet;
+}
 
 // Add a lot of diferent options that can be activated with flags
 // Mostly an option to have a difrent aproach to the speed control

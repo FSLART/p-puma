@@ -17,6 +17,8 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
 
     controlOutput = algorithm->calculate_control(this->currentPath, 
         this->currentPose, this->currentSpeed, this->currentSteering);
+
+    controlOutput.rpm = clamp(controlOutput.rpm, 0, MS_TO_RPM(this->missionSpeed));
     return controlOutput;
     
 }
@@ -45,18 +47,19 @@ void ControlManager::set_mission(lart_msgs::msg::Mission mission){
         case lart_msgs::msg::Mission::SKIDPAD:
         case lart_msgs::msg::Mission::AUTOCROSS:
         case lart_msgs::msg::Mission::TRACKDRIVE:
-            this->algorithm = new Pursuit_Algorithm(DEFAULT_MAX_SPEED);
+            this->missionSpeed = DEFAULT_MAX_SPEED;
             break;
         case lart_msgs::msg::Mission::ACCELERATION:
-            this->algorithm = new Pursuit_Algorithm(ACC_SPEED);
+            this->missionSpeed = ACC_SPEED;
             break;
         case lart_msgs::msg::Mission::EBS_TEST:
-            this->algorithm = new Pursuit_Algorithm(EBS_SPEED);
+            this->missionSpeed = EBS_SPEED;
             break;
         default:
             break;
     }
 
+    this->algorithm = new Pursuit_Algorithm(this->missionSpeed);
 }
 
 bool ControlManager::is_ready(){

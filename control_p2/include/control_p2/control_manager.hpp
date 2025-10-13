@@ -29,6 +29,7 @@ class ControlManager {
         bool missionSet = false;
         float currentSpeed;
         float currentSteering;
+        float missionSpeed;
         geometry_msgs::msg::PoseStamped currentPose;
         lart_msgs::msg::PathSpline currentPath;
 

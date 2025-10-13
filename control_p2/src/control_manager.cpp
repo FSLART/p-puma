@@ -18,7 +18,9 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
     controlOutput = algorithm->calculate_control(this->currentPath, 
         this->currentPose, this->currentSpeed, this->currentSteering);
 
-    controlOutput.rpm = clamp(controlOutput.rpm, 0, MS_TO_RPM(this->missionSpeed));
+    // compute max rpm in the same type as controlOutput.rpm and clamp
+    auto max_rpm = static_cast<decltype(controlOutput.rpm)>(MS_TO_RPM(this->missionSpeed));
+    controlOutput.rpm = std::clamp(controlOutput.rpm, static_cast<decltype(controlOutput.rpm)>(0), max_rpm);
     return controlOutput;
     
 }

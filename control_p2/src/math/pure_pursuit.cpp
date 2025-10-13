@@ -38,7 +38,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
         set_target_point(target_point);
 
         control_output.steering_angle = getAvgAngle();
-        control_output.rpm = calculate_desiredSpeed(path);
+        control_output.rpm = MS_TO_RPM(calculate_desiredSpeed(path));
         return control_output;
     }
     // Calculate angle between the closest point and (0,0) (because the point is returned relative to (0,0)) instead of the rear!!
@@ -52,7 +52,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     // Set the control output
     control_output.steering_angle = getAvgAngle();
-    control_output.rpm = calculate_desiredSpeed(path);
+    control_output.rpm = MS_TO_RPM(calculate_desiredSpeed(path));
 
     return control_output;
 }
@@ -122,7 +122,7 @@ float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path)
             curvature = 0.0001; // Avoid division by zero
         }
 
-        float velocity = sqrt(this->grip_coefficient * LART_GRAVITY * (1/curvature));
+        float velocity = sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1/curvature));
         
         return velocity;
     }

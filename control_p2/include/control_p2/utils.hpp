@@ -6,7 +6,7 @@
 /*------------------------------------------------------------------------------*/
 
 //OPTIONS
-//#include "options.hpp"
+#include "options.hpp"
 
 //Custom msgs
 #include "lart_msgs/msg/dynamics_cmd.hpp"
@@ -19,7 +19,7 @@
 #include "lart_common.h"
 
 // Vehicle Config
-#include "model/dry_model.hpp"
+#include MODEL
 
 /*------------------------------------------------------------------------------*/
 /*                                   TOPICS                                     */

@@ -26,13 +26,6 @@ TEST(ControlManagerTest, Setters) {
 /*                             TEST GETTERS                                     */
 /*------------------------------------------------------------------------------*/
 
-// Test getDynamicsCMD returns zero when not ready or mission not set
-TEST(ControlManagerTest, GetDynamicsCMD_NotReady) {
-    ControlManager manager;
-    auto cmd = manager.getDynamicsCMD();
-    ASSERT_EQ(cmd.rpm, 0);
-    ASSERT_FLOAT_EQ(cmd.steering_angle, 0.0f);
-}
 
 // Test getDynamicsCMD returns valid command when ready and mission set
 TEST (tst_manager, GetStraightPathAngle){

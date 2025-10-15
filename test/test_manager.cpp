@@ -47,8 +47,6 @@ TEST (tst_manager, GetStraightPathAngle){
     dynamics.rpm = 0;
     dynamics.steering_angle = 0.0;
 
-    lart_msgs::msg::Mission mission;
-    mission.data = lart_msgs::msg::Mission::AUTOCROSS;
 
     geometry_msgs::msg::Point point;
     std::vector<std::vector<float>> data = {
@@ -89,8 +87,7 @@ TEST (tst_manager, GetStraightPathAngle){
     ControlManager controlManager;
 
     // Set up the control manager with the test data
-    controlManager.set_ready();
-    controlManager.set_mission(mission);
+     controlManager.set_missionSpeed(5.0);
     controlManager.set_path(path);
     controlManager.set_dynamics(dynamics);
     controlManager.set_pose(pose_stamped);
@@ -114,9 +111,6 @@ TEST (tst_manager, get_straight_angle){
     //Generating Data
     dynamics.rpm = 0;
     dynamics.steering_angle = 0.0;
-
-    lart_msgs::msg::Mission mission;
-    mission.data = lart_msgs::msg::Mission::AUTOCROSS;
 
     geometry_msgs::msg::Point point;
     std::vector<std::vector<float>> data = {
@@ -157,8 +151,7 @@ TEST (tst_manager, get_straight_angle){
     ControlManager controlManager;
 
     // Set up the control manager with the test data
-    controlManager.set_ready();
-    controlManager.set_mission(mission);
+    controlManager.set_missionSpeed(5.0);
     controlManager.set_path(path);
     controlManager.set_dynamics(dynamics);
     controlManager.set_pose(pose_stamped);

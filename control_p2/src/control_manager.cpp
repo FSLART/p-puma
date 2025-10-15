@@ -14,7 +14,7 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
     // compute max rpm in the same type as controlOutput.rpm and clamp
     auto max_rpm = static_cast<decltype(controlOutput.rpm)>(MS_TO_RPM(this->missionSpeed));
     controlOutput.rpm = std::clamp(controlOutput.rpm, static_cast<decltype(controlOutput.rpm)>(0), max_rpm);
-    
+
     return controlOutput;
     
 }

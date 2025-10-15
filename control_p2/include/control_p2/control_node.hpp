@@ -22,6 +22,7 @@ public:
     void path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg);
     void dynamics_callback(const lart_msgs::msg::Dynamics::SharedPtr msg);
     void pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+    void cleanUp();
 
 private:
 
@@ -37,7 +38,6 @@ protected:
 
     // Functions
     void dispatchDynamicsCMD();
-    void cleanUp();
     void checkTimeStamp(rclcpp::Time msgTimeStamp);
 
     // Parameters

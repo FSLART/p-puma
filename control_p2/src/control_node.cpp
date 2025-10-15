@@ -54,6 +54,7 @@ void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
         break;
 
     case lart_msgs::msg::State::FINISH:
+        // Stop the car but inside the manager maybe
     case lart_msgs::msg::State::EMERGENCY:
         this->cleanUp();
         break;

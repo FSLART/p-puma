@@ -11,6 +11,8 @@ ControlP2::ControlP2() : Node("control_node")
     
     dynamics_publisher = this->create_publisher<lart_msgs::msg::DynamicsCMD>(TOPIC_DYNAMICS_CMD, 10);
 
+    marker_publisher = this->create_publisher<visualization_msgs::msg::Marker>(TOPIC_TARGET_MARKER, 10);
+
 
     /*------------------------------------------------------------------------------*/
     /*                                PUBLISHERS TIMER                              */
@@ -130,6 +132,12 @@ void ControlP2::dispatchDynamicsCMD()
     // publish dynamics command
     lart_msgs::msg::DynamicsCMD control_output = this->control_manager->getDynamicsCMD();
     this->dynamics_publisher->publish(control_output);
+
+    // publish target marker
+    if(TARGET_MARKER_VISIBLE){
+        visualization_msgs::msg::Marker target_marker = this->control_manager->get_target_marker();
+        this->marker_publisher->publish(target_marker);
+    }
 }
 
 void ControlP2::checkTimeStamp(rclcpp::Time msgTimeStamp)

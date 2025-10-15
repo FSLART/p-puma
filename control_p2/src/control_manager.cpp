@@ -19,6 +19,38 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
     
 }
 
+visualization_msgs::msg::Marker ControlManager::get_target_marker(){
+
+    array<float, 2> target_point = algorithm->get_target_point();
+
+    visualization_msgs::msg::Marker marker;
+
+    marker.header.frame_id = "base_footprint";
+    marker.header.stamp = rclcpp::Clock().now();
+    marker.ns = "pure_pursuit";
+    marker.id = 0;
+    marker.type = visualization_msgs::msg::Marker::CYLINDER;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose.position.x = target_point[0];
+    marker.pose.position.y = target_point[1];
+    marker.pose.position.z = 0.0;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+
+    marker.lifetime = rclcpp::Duration::from_seconds(1);
+
+    return marker;
+}
+
 
 void ControlManager::set_path(lart_msgs::msg::PathSpline path){
     this->currentPath = path;

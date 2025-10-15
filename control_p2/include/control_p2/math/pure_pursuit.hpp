@@ -16,6 +16,8 @@ class Pursuit_Algorithm {
         Pursuit_Algorithm(float missionSpeed);
         lart_msgs::msg::DynamicsCMD calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped pose,
              float current_speed, float current_steering);
+
+        array<float, 2> get_target_point();
     private:
         // Auxiliary functions
         vector<array<float, 2>> transform_path(lart_msgs::msg::PathSpline path);

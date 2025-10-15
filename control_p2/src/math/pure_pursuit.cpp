@@ -157,3 +157,8 @@ void Pursuit_Algorithm::set_target_point(std::array<float, 2> closest_point)
 {
     this->target_point = closest_point;
 }
+
+array<float, 2> Pursuit_Algorithm::get_target_point()
+{
+    return this->target_point;
+}

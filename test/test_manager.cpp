@@ -87,7 +87,7 @@ TEST (tst_manager, GetStraightPathAngle){
     ControlManager controlManager;
 
     // Set up the control manager with the test data
-     controlManager.set_missionSpeed(5.0);
+    controlManager.set_missionSpeed(5.0);
     controlManager.set_path(path);
     controlManager.set_dynamics(dynamics);
     controlManager.set_pose(pose_stamped);

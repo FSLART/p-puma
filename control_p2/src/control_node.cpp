@@ -138,6 +138,11 @@ void ControlP2::dispatchDynamicsCMD()
         visualization_msgs::msg::Marker target_marker = this->control_manager->get_target_marker();
         this->marker_publisher->publish(target_marker);
     }
+
+    // log info
+    if(LOG_INFO){
+        this->control_manager->log_info();
+    }
 }
 
 void ControlP2::checkTimeStamp(rclcpp::Time msgTimeStamp)

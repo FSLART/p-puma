@@ -18,28 +18,41 @@
 /*                              ALGORITHM & MODEL                               */
 /*------------------------------------------------------------------------------*/
 
+#pragma region Algorithm & Model
+
 #define ALGORITHM  "math/pure_pursuit.hpp"
 #define MODEL "model/dry_model.hpp"
 
+#pragma endregion
 /*------------------------------------------------------------------------------*/
 /*                       MAXIMUM SPEED FOR EACH MISSION                         */
 /*------------------------------------------------------------------------------*/
+
+#pragma region Maximum Speed for Each Mission
 
 #define DEFAULT_MAX_SPEED 6.0f
 #define ACC_SPEED 8.0f
 #define EBS_SPEED 2.0f
 
+#pragma endregion
 /*------------------------------------------------------------------------------*/
 /*                           PUBLISHER FREQUENCY (HZ)                           */
 /*------------------------------------------------------------------------------*/
 
+#pragma region Publisher Frequency (Hz)
+
 #define FREQUENCY 50 // Hz
 
+#pragma endregion
 /*------------------------------------------------------------------------------*/
 /*                                 DEBUG FLAGS                                  */
 /*------------------------------------------------------------------------------*/
 
+#pragma region Debug Flags
+
 #define TARGET_MARKER_VISIBLE false
 #define LOG_INFO false
+
+#pragma endregion
 
 #endif

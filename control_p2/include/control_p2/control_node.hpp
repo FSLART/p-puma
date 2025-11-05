@@ -47,6 +47,8 @@ protected:
     rclcpp::Time drivingSignalTimeStamp;
     rclcpp::TimerBase::SharedPtr control_timer;
 
+    // flags
+    bool race_finished = false;
 
     //Class
     ControlManager *control_manager;

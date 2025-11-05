@@ -62,7 +62,9 @@ void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
         break;
 
     case lart_msgs::msg::State::FINISH:
-        // Stop the car but inside the manager maybe
+        this->race_finished = true;
+        break;
+
     case lart_msgs::msg::State::EMERGENCY:
         this->cleanUp();
         break;
@@ -129,8 +131,14 @@ void ControlP2::dispatchDynamicsCMD()
         RCLCPP_WARN(this->get_logger(), "Control node not ready or mission not set, not sending commands");
         return;
     }
-    // publish dynamics command
+
     lart_msgs::msg::DynamicsCMD control_output = this->control_manager->getDynamicsCMD();
+
+    if(this->race_finished){
+        control_output.rpm = 0;
+    }
+
+    // publish dynamics command
     this->dynamics_publisher->publish(control_output);
 
     // publish target marker

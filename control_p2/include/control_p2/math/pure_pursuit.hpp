@@ -17,7 +17,7 @@ class Pursuit_Algorithm {
         lart_msgs::msg::DynamicsCMD calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped pose,
              float current_speed, float current_steering);
 
-        array<float, 2> get_target_point();
+        geometry_msgs::msg::PoseStamped get_target_point();
     private:
         // Auxiliary functions
         vector<array<float, 2>> transform_path(lart_msgs::msg::PathSpline path);
@@ -27,13 +27,12 @@ class Pursuit_Algorithm {
         float calculate_desiredSpeed(lart_msgs::msg::PathSpline path);
         void keepAvgAngle(float new_angle);
         float getAvgAngle();
-        void set_target_point(array<float, 2> closest_point);
         
         // Parameters
         int closest_point_index = -1;
         float avg_angle[SIZE_AVG_ARRAY] = {0};
         int cycles = 0;
-        array<float, 2> target_point;
+        geometry_msgs::msg::PoseStamped target_point;
         float missionSpeed;
         VehicleModel vehicle = VehicleModel();
         

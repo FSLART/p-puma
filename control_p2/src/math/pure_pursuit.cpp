@@ -17,7 +17,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     
     // Define the target point
     optional<array<float, 2>> closest_point = get_closest_point(path_points, look_ahead_distance);
-    
+
     // If no closest point is found, return the current steering angle
     if (!closest_point.has_value())
     {
@@ -26,16 +26,15 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
         
         return control_output;
     }
+
+    // Set the target point        
+    this->target_point = path.poses[this->closest_point_index];
+
     // If the closest point is in front of the car then consider the desired angle to be 0
     if ((*closest_point)[0] == 0)
     {
         // Keep previous angles to calculate the average
         keepAvgAngle(0.0f);
-
-        target_point[0] = (*closest_point)[0];
-        target_point[1] = (*closest_point)[1];
-
-        set_target_point(target_point);
 
         control_output.steering_angle = getAvgAngle();
         control_output.rpm = MS_TO_RPM(calculate_desiredSpeed(path));
@@ -151,11 +150,6 @@ float Pursuit_Algorithm::getAvgAngle(){
         sum += avg_angle[i];
     }
     return sum / interval;
-}
-
-void Pursuit_Algorithm::set_target_point(std::array<float, 2> closest_point)
-{
-    this->target_point = closest_point;
 }
 
 array<float, 2> Pursuit_Algorithm::get_target_point()

@@ -24,7 +24,7 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
 
 visualization_msgs::msg::Marker ControlManager::get_target_marker(){
 
-    array<float, 2> target_point = algorithm->get_target_point();
+    geometry_msgs::msg::PoseStamped target_point = algorithm->get_target_point();
 
     visualization_msgs::msg::Marker marker;
 
@@ -34,8 +34,8 @@ visualization_msgs::msg::Marker ControlManager::get_target_marker(){
     marker.id = 0;
     marker.type = visualization_msgs::msg::Marker::CYLINDER;
     marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose.position.x = target_point[0];
-    marker.pose.position.y = target_point[1];
+    marker.pose.position.x = target_point.pose.position.x;
+    marker.pose.position.y = target_point.pose.position.y;
     marker.pose.position.z = 0.0;
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;

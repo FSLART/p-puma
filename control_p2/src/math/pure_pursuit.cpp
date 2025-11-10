@@ -12,7 +12,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // Transform the path to the car's coordinate system
     vector<array<float, 2>> path_points = transform_path(path);
 
-    // Calculate look ahead point based on the speed with a min and max distances
+    // Calculate lookahead point based on the speed with a min and max distances
     float look_ahead_distance = clamp(speed_to_lookahead(current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
     
     // Define the target point

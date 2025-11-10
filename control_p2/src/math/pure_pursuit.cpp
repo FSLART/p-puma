@@ -152,7 +152,7 @@ float Pursuit_Algorithm::getAvgAngle(){
     return sum / interval;
 }
 
-array<float, 2> Pursuit_Algorithm::get_target_point()
+geometry_msgs::msg::PoseStamped Pursuit_Algorithm::get_target_point()
 {
     return this->target_point;
 }

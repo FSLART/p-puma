@@ -60,14 +60,14 @@ void ControlManager::log_info(){
         this->currentSpeed, this->currentSteering, this->missionSpeed);
 
     //Obtain target point
-    array<float, 2> target_point = this->algorithm->get_target_point();
+    geometry_msgs::msg::PoseStamped target_point = this->algorithm->get_target_point();
     
     //Write to csv file
     std::ofstream log_file;
     log_file.open("control_log.csv", std::ios_base::app); // append mode
     log_file << this->currentSpeed << "," << this->currentSteering << "," << this->missionSpeed << "," << 
-        this->currentPose.pose.position.x << "," << this->currentPose.pose.position.y << ","  << target_point[0] << "," << 
-        target_point[1] << "," << rclcpp::Clock().now().seconds() << "\n";
+        this->currentPose.pose.position.x << "," << this->currentPose.pose.position.y << ","  << target_point.pose.position.x << "," << 
+        target_point.pose.position.y << "," << rclcpp::Clock().now().seconds() << "\n";
     log_file.close();
 }
 

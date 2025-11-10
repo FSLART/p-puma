@@ -3,6 +3,7 @@
 
 #include "options.hpp"
 #include ALGORITHM
+#include <fstream>
 
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker.hpp"
@@ -21,6 +22,7 @@ class ControlManager {
         float get_currentSpeed();
         float get_currentSteering();
         visualization_msgs::msg::Marker get_target_marker();
+        void log_info();
 
     private:
         Pursuit_Algorithm *algorithm;

@@ -35,12 +35,6 @@ ControlP2::ControlP2() : Node("control_node")
     dynamics_subscriber = this->create_subscription<lart_msgs::msg::Dynamics>(
         TOPIC_DYNAMICS, 10, std::bind(&ControlP2::dynamics_callback, this, _1));
 
-    state_subscriber = this->create_subscription<lart_msgs::msg::State>(
-        TOPIC_STATE, 10, std::bind(&ControlP2::state_callback, this, _1));
-
-    mission_subscriber = this->create_subscription<lart_msgs::msg::Mission>(
-        TOPIC_MISSION, 10, std::bind(&ControlP2::mission_callback, this, _1));
-
     position_subscriber = this->create_subscription<geometry_msgs::msg::PoseStamped>(
         TOPIC_SLAM, 10, std::bind(&ControlP2::pose_callback, this, _1));
 

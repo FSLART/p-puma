@@ -67,7 +67,7 @@ void ControlManager::log_info(){
     log_file.open("control_log.csv", std::ios_base::app); // append mode
     log_file << this->currentSpeed << "," << this->currentSteering << "," << this->missionSpeed << "," << 
         this->currentPose.pose.position.x << "," << this->currentPose.pose.position.y << ","  << target_point.pose.position.x << "," << 
-        target_point.pose.position.y << "," << rclcpp::Clock().now().seconds() << "\n";
+        target_point.pose.position.y << "\n";
     log_file.close();
 }
 

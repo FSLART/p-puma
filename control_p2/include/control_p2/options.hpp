@@ -50,8 +50,8 @@
 
 #pragma region Debug Flags
 
-#define TARGET_MARKER_VISIBLE false
-#define LOG_INFO false
+#define TARGET_MARKER_VISIBLE true
+#define LOG_INFO true
 
 #pragma endregion
 

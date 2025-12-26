@@ -7,6 +7,8 @@
 
 #include "control_manager.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include <optional>
+#include <chrono>
 
 
 
@@ -39,12 +41,12 @@ protected:
 
     // Functions
     void dispatchDynamicsCMD();
-    void checkTimeStamp(rclcpp::Time msgTimeStamp);
+    void checkTimeStamp();
 
     // Parameters
     bool ready = false;
     bool missionSet = false;
-    rclcpp::Time drivingSignalTimeStamp;
+    std::optional<std::chrono::steady_clock::time_point> drivingSignalTimeStamp;
     rclcpp::TimerBase::SharedPtr control_timer;
 
     // flags

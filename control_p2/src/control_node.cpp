@@ -1,4 +1,6 @@
 #include "control_p2/control_node.hpp"
+#include <chrono>
+#include <optional>
 
 using std::placeholders::_1;
 
@@ -58,7 +60,9 @@ void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
     switch (msg->data)
     {
     case lart_msgs::msg::State::DRIVING:
-        this->drivingSignalTimeStamp = msg->header.stamp;
+        if(!this->ready){
+            this->checkTimeStamp();
+        }
         break;
 
     case lart_msgs::msg::State::FINISH:
@@ -77,7 +81,7 @@ void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
 void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
 {
 
-    RCLCPP_INFO(this->get_logger(), "Mission received: %d", msg->data);
+    //RCLCPP_INFO(this->get_logger(), "Mission received: %d", msg->data);
 
     this->missionSet = true;
 
@@ -104,11 +108,6 @@ void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
 
 void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)
 {
-    //Check if the car is ready to drive (3 seconds after the driving signal [FSG RULE BOOK 2026])
-    if(this->ready == false){
-        checkTimeStamp(msg->header.stamp);
-    }
-        
     // save current path
     this->control_manager->set_path(*msg);
 }
@@ -128,7 +127,8 @@ void ControlP2::pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr m
 void ControlP2::dispatchDynamicsCMD()
 {
     if(!this->ready || !this->missionSet){
-        RCLCPP_WARN(this->get_logger(), "Control node not ready or mission not set, not sending commands");
+        if(!this->drivingSignalTimeStamp.has_value())
+            RCLCPP_WARN(this->get_logger(), "Control node not ready or mission not set, not sending commands");
         return;
     }
 
@@ -153,16 +153,25 @@ void ControlP2::dispatchDynamicsCMD()
     }
 }
 
-void ControlP2::checkTimeStamp(rclcpp::Time msgTimeStamp)
+void ControlP2::checkTimeStamp()
 {
-    // rclcpp::Duration timeDiff = this->drivingSignalTimeStamp - msgTimeStamp;
-    // if (timeDiff.seconds() > 3.0)
-    // {
-    //     RCLCPP_INFO(this->get_logger(), "3 seconds have passed since the Driving signal, the car can start");
-    //     this->ready = true;
-    // }
-    this->ready = true;
+    if(!this->drivingSignalTimeStamp.has_value()){
+        this->drivingSignalTimeStamp = std::chrono::steady_clock::now();
+        RCLCPP_WARN(this->get_logger(), "First driving signal received");
+        return;
+    }
 
+    auto now = std::chrono::steady_clock::now();
+    auto diff = now - this->drivingSignalTimeStamp.value();
+    double seconds = std::chrono::duration<double>(diff).count();
+
+    RCLCPP_INFO(this->get_logger(), "seconds since driving signal: %f", seconds);
+
+    if (seconds > 3.0)
+    {
+        RCLCPP_INFO(this->get_logger(), "3 seconds have passed since the Driving signal, the car can start");
+        this->ready = true;
+    }
 }
 
 void ControlP2::cleanUp()

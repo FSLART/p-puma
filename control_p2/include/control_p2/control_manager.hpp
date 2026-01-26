@@ -4,6 +4,7 @@
 #include "options.hpp"
 #include ALGORITHM
 #include <fstream>
+#include <Eigen/Dense>
 
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker.hpp"

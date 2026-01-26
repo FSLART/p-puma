@@ -73,7 +73,58 @@ void ControlManager::log_info(){
 
 
 void ControlManager::set_path(lart_msgs::msg::PathSpline path){
-    this->currentPath = path;
+    //New local path
+    lart_msgs::msg::PathSpline local_path;
+    
+    //Eigen matrices for  transformation
+    Eigen::Matrix3d T_robot_in_world = Eigen::Matrix3d::Identity();
+    Eigen::Matrix3Xd worldMatrix(3, path.poses.size());
+
+    //curremt car pose and heading
+    geometry_msgs::msg::PoseStamped current_pose = this->get_currentPose();
+    float theta = current_pose.pose.orientation.w;
+
+    T_robot_in_world(0, 0) = cos(theta);
+    T_robot_in_world(0, 1) = -sin(theta);
+    T_robot_in_world(1, 0) = sin(theta);
+    T_robot_in_world(1, 1) = cos(theta);
+    T_robot_in_world(0, 2) = current_pose.pose.position.x;
+    T_robot_in_world(1, 2) = current_pose.pose.position.y;
+
+
+    for (size_t i = 0; i < path.poses.size(); ++i) {
+        worldMatrix(0, i) = path.poses[i].pose.position.x;
+        worldMatrix(1, i) = path.poses[i].pose.position.y;
+        worldMatrix(2, i) = 1.0;
+    }
+
+    Eigen::Matrix3Xd localPoints = T_robot_in_world.inverse() * worldMatrix;
+
+    std::vector<geometry_msgs::msg::PoseStamped> outputPoses;
+
+    for (size_t i = 0; i < path.poses.size(); ++i) {
+        geometry_msgs::msg::PoseStamped ps;
+        
+        ps.header.frame_id = "base_footprint";
+
+        ps.pose.position.x = localPoints(0, i);
+        ps.pose.position.y = localPoints(1, i);
+        ps.pose.position.z = 0.0; // 2D Assumption
+
+        ps.pose.orientation.x = 0.0;
+        ps.pose.orientation.y = 0.0;
+        ps.pose.orientation.z = 0.0;
+        ps.pose.orientation.w = 1.0;
+
+        outputPoses.push_back(ps);
+    }
+
+    local_path.header = path.header;
+    local_path.poses = outputPoses;
+    local_path.curvature = path.curvature; // Assuming curvature remains the same
+    local_path.distance = path.distance; 
+    
+    this->currentPath = local_path;
 }
 
 void ControlManager::set_dynamics(lart_msgs::msg::Dynamics dynamics){

@@ -24,7 +24,18 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     // Define the target point
     this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
+
+    //trasform target to local
+    float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
+    float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
+    float final_x = shiffet_x * cos(-current_pose.pose.orientation.w) - shiffet_y * sin(-current_pose.pose.orientation.w);
+    float final_y = shiffet_x * sin(-current_pose.pose.orientation.w) + shiffet_y * cos(-current_pose.pose.orientation.w);
+
     this->target_point = path.poses[this->closest_point_index];
+
+    //update target point
+    this->target_point.pose.position.x = final_x;
+    this->target_point.pose.position.y = final_y;
 
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();

@@ -54,6 +54,10 @@
 #define TAU 0.01f // seconds for low pass filter
 #define MAX_RPM_DELTA 3.0f // maximum change in RPM per control cycle
 
+#define KP 1.0f
+#define KI 0.1f
+#define KD 0.05f
+
 #pragma endregion
 /*------------------------------------------------------------------------------*/
 /*                                 DEBUG FLAGS                                  */

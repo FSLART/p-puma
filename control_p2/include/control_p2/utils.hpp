@@ -37,7 +37,7 @@
 /*                                  CONSTANTS                                   */
 /*------------------------------------------------------------------------------*/
 
-// La grabidad
+// La gravedad
 #define LART_GRAVITY 9.81f
 
 #define DEFAULT_IMU_TO_REAR_AXLE 1.15f
@@ -50,6 +50,10 @@
 #define MIN_TARGET_INDEX MIN_LOOKAHEAD/SPACE_BETWEEN_POINTS
 
 #define SIZE_AVG_ARRAY 3
+
+// PID CONTROLLER SIGNAL LIMITS
+#define MIN_SIG_VAL -1.0f
+#define MAX_SIG_VAL 1.0f
 
 
 #endif

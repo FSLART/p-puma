@@ -30,9 +30,9 @@
 
 #pragma region Maximum Speed for Each Mission
 
-#define DEFAULT_MAX_SPEED 2.0f
-#define ACC_SPEED 2.0f
-#define EBS_SPEED 2.0f
+#define DEFAULT_MAX_SPEED 2.0f // m/s
+#define ACC_SPEED 2.0f  // m/s
+#define EBS_SPEED 2.0f  // m/s
 
 #pragma endregion
 /*------------------------------------------------------------------------------*/

@@ -40,6 +40,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
         rpm_delta = MAX_RPM_DELTA;
     }
     float limited_rpm = prev_rpm + rpm_delta;
+    limited_rpm = std::clamp(limited_rpm, 0.0f, MS_TO_RPM(this->missionSpeed));
 
     // If the target point is in front of the car then consider the desired angle to be 0
     if(this->target_point.pose.position.y == 0){

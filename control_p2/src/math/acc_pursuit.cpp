@@ -5,7 +5,7 @@ Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed) {
     
     //Initialize previous output for the first iteration
     this->prevOutput.steering_angle = 0.0f;
-    this->prevOutput.rpm = 0;
+    this->prevOutput.acc_cmd = 0.0f;
     
     //Intialize previous time
     this->prevTime = rclcpp::Clock().now();
@@ -34,16 +34,16 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // Calculate desired speed and limit acceleration
     float desired_speed = calculate_desiredSpeed(path);
 
-    // Apply PID controller to define the aceleration (work in progress)
+    // Apply PID controller to define the aceleration
     float acc_cmd = this->pid_controller.compute(desired_speed, current_speed);
-    //TODO: create a new msg that accepts acceleration command directly            
+    acc_cmd = clamp(acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
 
     // If the target point is in front of the car then consider the desired angle to be 0
     if(this->target_point.pose.position.y == 0){
 
         // Apply low pass filter to steering angle towards 0
         control_output.steering_angle = lowPassFilter(0.0f, dt);
-        control_output.rpm = static_cast<decltype(control_output.rpm)>(limited_rpm);
+        control_output.acc_cmd = acc_cmd;
 
         //save previous output
         this->prevOutput = control_output;
@@ -60,7 +60,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     // Apply low pass filter to steering angle
     control_output.steering_angle = lowPassFilter(steering_angle, dt);
-    control_output.rpm = static_cast<decltype(control_output.rpm)>(limited_rpm);
+    control_output.acc_cmd = acc_cmd;
 
     //save previous output
     this->prevOutput = control_output;
@@ -93,6 +93,7 @@ float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path)
         }
 
         float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature));
+        velocity = clamp(velocity, 0.0f, this->missionSpeed);
 
         return velocity;
     }

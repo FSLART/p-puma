@@ -134,6 +134,7 @@ void ControlP2::dispatchDynamicsCMD()
 
     if(this->race_finished){
         control_output.rpm = 0;
+        control_output.acc_cmd = 0.0;
     }
 
     // publish dynamics command
@@ -178,6 +179,8 @@ void ControlP2::cleanUp()
     lart_msgs::msg::DynamicsCMD cleanUpMailBox = lart_msgs::msg::DynamicsCMD();
     cleanUpMailBox.rpm = 0;
     cleanUpMailBox.steering_angle = 0.0;
+    cleanUpMailBox.acc_cmd = 0.0;
+    cleanUpMailBox.header.stamp = rclcpp::Clock().now();
 
     this->dynamics_publisher->publish(cleanUpMailBox);
 

@@ -27,8 +27,18 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
         return control_output;
     }
 
-    // Set the target point        
+
+    //trasform target to local
+    float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
+    float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
+    float final_x = shiffet_x * cos(-current_pose.pose.orientation.w) - shiffet_y * sin(-current_pose.pose.orientation.w);
+    float final_y = shiffet_x * sin(-current_pose.pose.orientation.w) + shiffet_y * cos(-current_pose.pose.orientation.w);
+
     this->target_point = path.poses[this->closest_point_index];
+
+    //update target point
+    this->target_point.pose.position.x = final_x;
+    this->target_point.pose.position.y = final_y;
 
     // If the closest point is in front of the car then consider the desired angle to be 0
     if ((*closest_point)[0] == 0)

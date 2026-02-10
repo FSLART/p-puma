@@ -48,11 +48,16 @@ ControlP2::ControlP2() : Node("control_node")
     /*                            CLASS INITIALIZATION                              */
     /*------------------------------------------------------------------------------*/
     control_manager = new ControlManager();
-
-    //temp
-    this->missionSet = true;
-    this->control_manager->set_missionSpeed(DEFAULT_MAX_SPEED);
-    this->ready = true;
+    
+    /*------------------------------------------------------------------------------*/
+    /*                        SIMULATION MODE INITIALIZATION                        */
+    /*------------------------------------------------------------------------------*/
+    if(SIM_MODE){
+        RCLCPP_WARN(this->get_logger(), "SIMULATION MODE ACTIVE: Starting with mission speed");
+        this->missionSet = true;
+        this->ready = true;
+        this->control_manager->set_missionSpeed(DEFAULT_MAX_SPEED);
+    }
 
 }
 
@@ -129,9 +134,16 @@ void ControlP2::pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr m
 
 void ControlP2::dispatchDynamicsCMD()
 {
-    if(!this->ready || !this->missionSet){
+    // Check if we have received the first driving signal and if the mission has been set
+    if(!this->ready || !this->missionSet ){
         if(!this->drivingSignalTimeStamp.has_value())
-            RCLCPP_WARN(this->get_logger(), "Control node not ready or mission not set, not sending commands");
+            RCLCPP_WARN(this->get_logger(), "Control node not ready or mission not set");
+        return;
+    }
+
+    // Check if we have received a path
+    if(this->control_manager->get_currentPath().poses.empty()){
+        RCLCPP_WARN(this->get_logger(), "No path received yet");
         return;
     }
 

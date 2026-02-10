@@ -1,7 +1,6 @@
 #include "control_p2/control_manager.hpp"
 
 ControlManager::ControlManager(){
-    //Empty constructor
 }
 
 lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
@@ -104,8 +103,3 @@ float ControlManager::get_currentSpeed(){
 float ControlManager::get_currentSteering(){
     return this->currentSteering;
 }
-
-// Add a lot of diferent options that can be activated with flags
-// Mostly an option to have a difrent aproach to the speed control
-// One in wich the speed control is expected from the path planner
-// And another where the speed control is done by the control node

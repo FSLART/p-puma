@@ -49,6 +49,11 @@ ControlP2::ControlP2() : Node("control_node")
     /*------------------------------------------------------------------------------*/
     control_manager = new ControlManager();
 
+    //temp
+    this->missionSet = true;
+    this->control_manager->set_missionSpeed(DEFAULT_MAX_SPEED);
+    this->ready = true;
+
 }
 
 void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)

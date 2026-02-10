@@ -12,6 +12,16 @@
 
 using namespace std;
 
+class PID_Controller{
+    public:
+        //Functions
+        PID_Controller();
+        float compute(float setpoint, float input);
+            
+    protected:
+        float error, error_prev, error_sum;
+};
+
 class Pursuit_Algorithm {
     public:
         Pursuit_Algorithm(float missionSpeed);
@@ -39,17 +49,5 @@ class Pursuit_Algorithm {
         PID_Controller pid_controller;
          
 };
-
-class PID_Controller{
-    public:
-        //Functions
-        PID_Controller();
-        float compute(float setpoint, float input);
-            
-    protected:
-        float error, error_prev, error_sum;
-};
-
-
 
 #endif

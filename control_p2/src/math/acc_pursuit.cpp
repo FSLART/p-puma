@@ -1,4 +1,4 @@
-#include "control_p2/math/lp_pursuit.hpp"
+#include "control_p2/math/acc_pursuit.hpp"
 
 Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed) {
     this->missionSpeed = missionSpeed;
@@ -16,6 +16,10 @@ Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed) {
 lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped current_pose,
              float current_speed, float current_steering){
 
+    //Ignore unused parameters
+    (void)current_pose;
+    (void)current_steering;
+    
     //Declare variable to return
     lart_msgs::msg::DynamicsCMD control_output;
 

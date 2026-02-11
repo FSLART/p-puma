@@ -132,7 +132,7 @@ float PID_Controller::compute(float setpoint, float input)
     error_sum += error;
     error_prev = error;
 
-    float output = KP * error + KI * error_sum + KD * (error - error_prev);
+    float output = kp * error + ki * error_sum + kd * (error - error_prev); 
 
     if(output > MAX_SIG_VAL){
         error_sum -= error;
@@ -142,5 +142,31 @@ float PID_Controller::compute(float setpoint, float input)
         output = MIN_SIG_VAL;
     }
 
+    this->cur_setpoint = setpoint;
+    this->cur_input = input;
+    
     return output;
+}
+
+void PID_Controller::set_gains(float kp, float ki, float kd)
+{
+    this->kp = kp;
+    this->ki = ki;
+    this->kd = kd;
+
+    //reset errors
+    error = 0;
+    error_prev = 0;
+    error_sum = 0;
+}
+
+// This function is used to test the PID controller
+vector<float> PID_Controller::eye_of_sauron() 
+{
+    return {output, error, error_sum, error_prev, cur_setpoint, cur_input, kp, ki, kd, MAX_SIG_VAL, MIN_SIG_VAL};
+}
+
+vector<float> Pursuit_Algorithm::mouth_of_sauron() 
+{
+    return this->pid_controller.eye_of_sauron();
 }

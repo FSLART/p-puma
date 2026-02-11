@@ -9,6 +9,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <optional>
 #include <chrono>
+#include "std_msgs/msg/float32_multi_array.hpp"
 
 
 
@@ -30,6 +31,7 @@ private:
 
     rclcpp::Publisher<lart_msgs::msg::DynamicsCMD>::SharedPtr dynamics_publisher;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_publisher;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr PID_tun_publisher;
 
     rclcpp::Subscription<lart_msgs::msg::State>::SharedPtr state_subscriber;
     rclcpp::Subscription<lart_msgs::msg::Mission>::SharedPtr mission_subscriber;

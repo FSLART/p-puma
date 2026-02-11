@@ -9,12 +9,12 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
 
     controlOutput = algorithm->calculate_control(this->currentPath, 
         this->currentPose, this->currentSpeed, this->currentSteering);
-    
     // Add timestamp
     controlOutput.header.stamp = rclcpp::Clock().now();
 
     return controlOutput;
 }
+
 
 visualization_msgs::msg::Marker ControlManager::get_target_marker(){
 
@@ -102,4 +102,8 @@ float ControlManager::get_currentSpeed(){
 
 float ControlManager::get_currentSteering(){
     return this->currentSteering;
+}
+
+vector<float> ControlManager::get_pid_debug(){
+    return this->algorithm->mouth_of_sauron();
 }

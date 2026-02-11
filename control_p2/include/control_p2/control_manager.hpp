@@ -24,6 +24,7 @@ class ControlManager {
         float get_currentSteering();
         visualization_msgs::msg::Marker get_target_marker();
         void log_info();
+        vector<float> get_pid_debug();
 
     private:
         Pursuit_Algorithm *algorithm;

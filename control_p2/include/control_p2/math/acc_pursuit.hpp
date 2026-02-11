@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <optional>
 #include <cmath>
+#include <vector>
 #include <algorithm>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -17,9 +18,13 @@ class PID_Controller{
         //Functions
         PID_Controller();
         float compute(float setpoint, float input);
+        void set_gains(float kp, float ki, float kd);
+        vector<float> eye_of_sauron();
             
     protected:
-        float error, error_prev, error_sum;
+        float error, error_prev, error_sum, output;
+        float kp, ki, kd;
+        float cur_setpoint, cur_input;
 };
 
 class Pursuit_Algorithm {
@@ -29,6 +34,7 @@ class Pursuit_Algorithm {
              float current_speed, float current_steering);
 
         geometry_msgs::msg::PoseStamped get_target_point();
+        vector<float> mouth_of_sauron();
     private:
         // functions
         float speed_to_lookahead(float speed);

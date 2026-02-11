@@ -1,4 +1,5 @@
 #include "control_p2/control_node.hpp"
+#include <std_msgs/msg/float32_multi_array.hpp>
 
 using std::placeholders::_1;
 
@@ -12,6 +13,8 @@ ControlP2::ControlP2() : Node("control_node")
     dynamics_publisher = this->create_publisher<lart_msgs::msg::DynamicsCMD>(TOPIC_DYNAMICS_CMD, 10);
 
     marker_publisher = this->create_publisher<visualization_msgs::msg::Marker>(TOPIC_TARGET_MARKER, 10);
+
+    PID_tun_publisher = this->create_publisher<std_msgs::msg::Float32MultiArray>("pid_debug", 10);
 
 
     /*------------------------------------------------------------------------------*/
@@ -156,6 +159,11 @@ void ControlP2::dispatchDynamicsCMD()
 
     // publish dynamics command
     this->dynamics_publisher->publish(control_output);
+
+    // Convert vector<float> to Float32MultiArray
+    std_msgs::msg::Float32MultiArray pid_msg;
+    pid_msg.data = this->control_manager->get_pid_debug();
+    this->PID_tun_publisher->publish(pid_msg);
 
     // publish target marker
     if(TARGET_MARKER_VISIBLE){

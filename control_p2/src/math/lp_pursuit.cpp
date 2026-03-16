@@ -108,6 +108,7 @@ float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path)
         }
 
         float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature));
+        velocity = std::clamp(velocity, 0.0f, this->missionSpeed);
 
         return velocity;
     }

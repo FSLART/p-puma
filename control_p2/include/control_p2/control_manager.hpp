@@ -24,9 +24,10 @@ class ControlManager {
         float get_currentSteering();
         visualization_msgs::msg::Marker get_target_marker();
         void log_info();
+        void terminate_algorithm();
 
     private:
-        Pursuit_Algorithm *algorithm;
+        std::unique_ptr<Pursuit_Algorithm> algorithm;
     protected:
         // Parameters
         float currentSpeed;

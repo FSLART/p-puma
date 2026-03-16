@@ -65,6 +65,9 @@ void ControlManager::log_info(){
     log_file.close();
 }
 
+void ControlManager::terminate_algorithm(){
+    this->algorithm.reset(); // safe even if already null
+}
 
 void ControlManager::set_path(lart_msgs::msg::PathSpline path){
     this->currentPath = path;
@@ -81,11 +84,11 @@ void ControlManager::set_pose(geometry_msgs::msg::PoseStamped pose){
 
 void ControlManager::set_missionSpeed(float missionSpeed){
     this->missionSpeed = missionSpeed;
-    this->algorithm = new Pursuit_Algorithm(this->missionSpeed);
+    this->algorithm = std::make_unique<Pursuit_Algorithm>(this->missionSpeed); // replaces + frees old
 }
 
 Pursuit_Algorithm * ControlManager::get_algorithm(){
-    return this->algorithm;
+    return this->algorithm.get();
 }
 
 lart_msgs::msg::PathSpline ControlManager::get_currentPath(){

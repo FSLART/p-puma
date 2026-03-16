@@ -65,7 +65,7 @@
 
 #pragma region Debug Flags
 
-#define SIM_MODE true
+#define SIM_MODE false
 #define TARGET_MARKER_VISIBLE true
 #define LOG_INFO false
 

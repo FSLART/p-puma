@@ -63,12 +63,12 @@ ControlP2::ControlP2() : Node("control_node")
 
 void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
 {
-    RCLCPP_INFO(this->get_logger(), "State callback received: %d", msg->data);
 
     switch (msg->data)
     {
     case lart_msgs::msg::State::DRIVING:
         if(!this->ready){
+            RCLCPP_INFO(this->get_logger(), "State callback received: %d", msg->data);
             this->checkTimeStamp();
         }
         break;
@@ -90,6 +90,9 @@ void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
 {
 
     //RCLCPP_INFO(this->get_logger(), "Mission received: %d", msg->data);
+    if(this->missionSet){
+        return;
+    }
 
     this->missionSet = true;
 
@@ -193,6 +196,19 @@ void ControlP2::checkTimeStamp()
 void ControlP2::cleanUp()
 {
     RCLCPP_INFO(this->get_logger(), "Cleaning up");
+
+    this->ready = false;
+    this->missionSet = false;
+    
+    if (this->control_timer) {
+        this->control_timer->cancel();
+    }
+
+    if(this->control_manager->get_algorithm() != nullptr){
+        RCLCPP_INFO(this->get_logger(), "Terminating algorithm");
+        this->control_manager->terminate_algorithm();
+    }
+
     lart_msgs::msg::DynamicsCMD cleanUpMailBox = lart_msgs::msg::DynamicsCMD();
     cleanUpMailBox.rpm = 0;
     cleanUpMailBox.steering_angle = 0.0;

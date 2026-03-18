@@ -66,7 +66,7 @@ void ControlManager::log_info(){
 }
 
 void ControlManager::terminate_algorithm(){
-    this->algorithm.reset(); // safe even if already null
+    this->algorithm.reset(); 
 }
 
 void ControlManager::set_path(lart_msgs::msg::PathSpline path){

@@ -19,23 +19,33 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     //Declare variable to return
     lart_msgs::msg::DynamicsCMD control_output;
 
+    // 1. Create a tf2 Quaternion object
+    tf2::Quaternion q;
+
+    // 2. Convert the message quaternion to the tf2 object
+    tf2::fromMsg(current_pose.pose.orientation, q);
+
+    // 3. Get the yaw
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
+
     // Calculate look ahead point based on the speed with a min and max distances
     float look_ahead_distance = clamp(speed_to_lookahead(current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
 
     // Define the target point
     this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
 
-    //trasform target to local
-    float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
-    float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
-    float final_x = shiffet_x * cos(-current_pose.pose.orientation.w) - shiffet_y * sin(-current_pose.pose.orientation.w);
-    float final_y = shiffet_x * sin(-current_pose.pose.orientation.w) + shiffet_y * cos(-current_pose.pose.orientation.w);
+    // //trasform target to local
+    // float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
+    // float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
+    // float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
+    // float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
 
     this->target_point = path.poses[this->closest_point_index];
 
     //update target point
-    this->target_point.pose.position.x = final_x;
-    this->target_point.pose.position.y = final_y;
+    // this->target_point.pose.position.x = final_x;
+    // this->target_point.pose.position.y = final_y;
 
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();
@@ -75,6 +85,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     // Apply low pass filter to steering angle
     control_output.steering_angle = lowPassFilter(steering_angle, dt);
+    //control_output.steering_angle = steering_angle;
     control_output.rpm = static_cast<decltype(control_output.rpm)>(limited_rpm);
 
     //save previous output

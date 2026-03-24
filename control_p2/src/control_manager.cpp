@@ -1,6 +1,15 @@
 #include "control_p2/control_manager.hpp"
 
 ControlManager::ControlManager(){
+    geometry_msgs::msg::PoseStamped default_pose;
+    default_pose.pose.position.x = 0.0;
+    default_pose.pose.position.y = 0.0;
+    default_pose.pose.position.z = 0.0;
+    default_pose.pose.orientation.x = 0.0;
+    default_pose.pose.orientation.y = 0.0;
+    default_pose.pose.orientation.z = 0.0;
+    default_pose.pose.orientation.w = 1.0;
+    this->set_pose(default_pose);
 }
 
 lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){

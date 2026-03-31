@@ -28,13 +28,22 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // Define the target point
     this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
 
+    // 1. Create a tf2 Quaternion object
+    tf2::Quaternion q;
+
+    // 2. Convert the message quaternion to the tf2 object
+    tf2::fromMsg(current_pose.pose.orientation, q);
+
+    // 3. Get the yaw
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
+
+
     //trasform target to local
     float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
     float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
-    float final_x = shiffet_x * cos(-current_pose.pose.orientation.w) - shiffet_y * sin(-current_pose.pose.orientation.w);
-    float final_y = shiffet_x * sin(-current_pose.pose.orientation.w) + shiffet_y * cos(-current_pose.pose.orientation.w);
-
-    this->target_point = path.poses[this->closest_point_index];
+    float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
+    float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
 
     //update target point
     this->target_point.pose.position.x = final_x;

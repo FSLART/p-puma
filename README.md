@@ -1,3 +1,4 @@
+![Project logo](doc/puma_banner.png)
 # P-PUMA Control System
 
 A ROS 2 C++ package implementing advanced path tracking control algorithms for autonomous vehicle guidance. The system provides multiple pursuit-based strategies (Pure Pursuit, LP Pursuit, ACC Pursuit) with configurable vehicle dynamics models.
@@ -53,6 +54,7 @@ p-puma/
 ├── test/                        # Unit tests
 │   ├── test_manager.cpp
 │   └── test_plan.cpp
+├── doc/                         # Documentation/Images    
 └── README.md
 ```
 

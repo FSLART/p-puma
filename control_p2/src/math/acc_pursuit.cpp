@@ -65,7 +65,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     if(this->target_point.pose.position.y == 0){
 
         // Apply low pass filter to steering angle towards 0
-        control_output.steering_angle = lowPassFilter(0.0f, dt);
+        control_output.steering_angle = clamp(lowPassFilter(0.0f, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
         control_output.acc_cmd = acc_cmd;
 
         //save previous output
@@ -82,7 +82,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), look_ahead_distance);
 
     // Apply low pass filter to steering angle
-    control_output.steering_angle = lowPassFilter(steering_angle, dt);
+    control_output.steering_angle = clamp(lowPassFilter(steering_angle, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
     control_output.acc_cmd = acc_cmd;
 
     //save previous output

@@ -18,6 +18,7 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
 
     controlOutput = algorithm->calculate_control(this->currentPath, 
         this->currentPose, this->currentSpeed, this->currentSteering);
+
     
     // Add timestamp
     controlOutput.header.stamp = rclcpp::Clock().now();

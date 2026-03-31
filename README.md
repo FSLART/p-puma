@@ -149,70 +149,15 @@ Configure mission-based speed limits in `options.hpp`:
 - Reduces high-frequency steering noise
 - Smoother vehicle response
 
-### ACC Pursuit (Adaptive Cruise Control)
+### ACC Pursuit (Acceleration Control)
 - Combines low-pass path tracking with speed regulation
 - PID-based speed controller
-
-## API Reference
-
-### ControlManager Class
-```cpp
-class ControlManager {
-    void set_path(lart_msgs::msg::PathSpline path);
-    void set_dynamics(lart_msgs::msg::Dynamics dynamics);
-    void set_pose(geometry_msgs::msg::PoseStamped pose);
-    void set_missionSpeed(float missionSpeed);
-    lart_msgs::msg::DynamicsCMD getDynamicsCMD();
-    Pursuit_Algorithm * get_algorithm();
-    visualization_msgs::msg::Marker get_target_marker();
-    void terminate_algorithm();
-};
-```
-
-### ControlP2 Node (ROS 2)
-ROS 2 node that wraps ControlManager with topic-based I/O and callback handling.
 
 ## Testing
 
 Run unit tests:
 ```bash
 colcon test --packages-select p-puma
-```
-
-## Performance
-
-- **Control Frequency**: 50 Hz (configurable)
-- **Typical CPU Usage**: <10% on modern systems
-- **Latency**: <20ms end-to-end
-- **Path Tracking Error**: <0.5m (vehicle dependent)
-
-## Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Submit a pull request
-
-## License
-
-This project is licensed under the Apache License 2.0 - see the [LICENSE](control_p2/LICENSE) file for details.
-
-## Author
-
-**Tomás Marcellino Santos**  
-Email: tomasmarcelinosantos@gmail.com
-
-## Citation
-
-If you use this project in your research, please cite it as:
-```bibtex
-@software{p_puma_2024,
-  title={P-PUMA},
-  author={Santos, Tomás Marcelino},
-  year={2024},
-  url={https://github.com/yourusername/p-puma}
-}
 ```
 
 ## Acknowledgments

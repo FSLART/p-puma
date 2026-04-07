@@ -14,11 +14,15 @@ ControlManager::ControlManager(){
 
 lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
 
-    lart_msgs::msg::DynamicsCMD controlOutput;
+    lart_msgs::msg::DynamicsCMD controlOutput = lart_msgs::msg::DynamicsCMD();
 
     controlOutput = algorithm->calculate_control(this->currentPath, 
         this->currentPose, this->currentSpeed, this->currentSteering);
-
+    
+    // Ensure that the control output does not exceed limits
+    // controlOutput.rpm = std::clamp(controlOutput.rpm, 0.0f, (float)MS_TO_RPM(this->missionSpeed));
+    // controlOutput.acc_cmd = std::clamp(controlOutput.acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
+    // controlOutput.steering_angle = std::clamp(controlOutput.steering_angle, (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
     
     // Add timestamp
     controlOutput.header.stamp = rclcpp::Clock().now();

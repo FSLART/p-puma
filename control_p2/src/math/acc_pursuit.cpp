@@ -40,10 +40,10 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
 
     //trasform target to local
-    // float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
-    // float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
-    float shiffet_x = path.poses[this->closest_point_index].pose.position.x - path.poses[0].pose.position.x;
-    float shiffet_y = path.poses[this->closest_point_index].pose.position.y - path.poses[0].pose.position.y;
+    float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
+    float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
+    //float shiffet_x = path.poses[this->closest_point_index].pose.position.x - path.poses[0].pose.position.x;
+    //float shiffet_y = path.poses[this->closest_point_index].pose.position.y - path.poses[0].pose.position.y;
     float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
     float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
     

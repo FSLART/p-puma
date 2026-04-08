@@ -4,6 +4,46 @@ using std::placeholders::_1;
 
 ControlP2::ControlP2() : Node("control_node")
 {
+    /*------------------------------------------------------------------------------*/
+    /*                                   ROS PARAMS                                 */
+    /*------------------------------------------------------------------------------*/
+    
+    //Flags
+    this->declare_parameter<bool>("sim_mode", false);
+    this->declare_parameter<bool>("log_info", false);
+    this->declare_parameter<bool>("target_marker_visible", true);
+
+    //Mission speeds
+    this->declare_parameter<float>("default_max_speed", 2.0f);
+    this->declare_parameter<float>("acc_speed", 2.0f);
+    this->declare_parameter<float>("ebs_speed", 2.0f);
+
+    //Lookahead tuning
+    this->declare_parameter<float>("lookahead_time", 0.5f);
+
+    //Algorithm tuning
+    this->declare_parameter<float>("tau", 0.01f);
+    this->declare_parameter<float>("kp", 1.0f);
+    this->declare_parameter<float>("ki", 0.1f);
+    this->declare_parameter<float>("kd", 0.05f);
+
+    this->get_parameter("sim_mode", sim_mode);
+    this->get_parameter("log_info", log_info);
+    this->get_parameter("target_marker_visible", target_marker_visible);
+    
+    this->get_parameter("default_max_speed",default_max_speed);
+    this->get_parameter("acc_speed",acc_speed);
+    this->get_parameter("ebs_speed",ebs_speed);
+
+    this->get_parameter("lookahead_time", lookahead_time);
+    this->get_parameter("tau", tau);
+    this->get_parameter("kp", kp);
+    this->get_parameter("ki", ki);
+    this->get_parameter("kd", kd);
+
+
+    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, default_max_speed: %.2f, acc_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
+        sim_mode, log_info, target_marker_visible, default_max_speed, acc_speed, ebs_speed, lookahead_time, tau, kp, ki, kd);
 
     /*------------------------------------------------------------------------------*/
     /*                                   PUBLISHERS                                 */
@@ -52,11 +92,11 @@ ControlP2::ControlP2() : Node("control_node")
     /*------------------------------------------------------------------------------*/
     /*                        SIMULATION MODE INITIALIZATION                        */
     /*------------------------------------------------------------------------------*/
-    if(SIM_MODE){
+    if(sim_mode){
         RCLCPP_WARN(this->get_logger(), "SIMULATION MODE ACTIVE: Starting with mission speed");
         this->missionSet = true;
         this->ready = true;
-        this->control_manager->set_missionSpeed(DEFAULT_MAX_SPEED);
+        this->control_manager->set_missionSpeed(default_max_speed, lookahead_time, tau, kp, ki, kd);
     }
 
 }
@@ -102,19 +142,19 @@ void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
         case lart_msgs::msg::Mission::SKIDPAD:
         case lart_msgs::msg::Mission::AUTOCROSS:
         case lart_msgs::msg::Mission::TRACKDRIVE:
-            missionSpeed = DEFAULT_MAX_SPEED;
+            missionSpeed = default_max_speed;
             break;
         case lart_msgs::msg::Mission::ACCELERATION:
-            missionSpeed = ACC_SPEED;
+            missionSpeed = acc_speed;
             break;
         case lart_msgs::msg::Mission::EBS_TEST:
-            missionSpeed = EBS_SPEED;
+            missionSpeed = ebs_speed;
             break;
         default:
             break;
     }
 
-    this->control_manager->set_missionSpeed(missionSpeed);
+    this->control_manager->set_missionSpeed(missionSpeed, lookahead_time, tau, kp, ki, kd);
 }
 
 void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)
@@ -162,13 +202,13 @@ void ControlP2::dispatchDynamicsCMD()
     this->dynamics_publisher->publish(control_output);
 
     // publish target marker
-    if(TARGET_MARKER_VISIBLE){
+    if(target_marker_visible){
         visualization_msgs::msg::Marker target_marker = this->control_manager->get_target_marker();
         this->marker_publisher->publish(target_marker);
     }
 
     // log info
-    if(LOG_INFO){
+    if(log_info){
         this->control_manager->log_info();
     }
 }

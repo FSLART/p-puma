@@ -15,16 +15,21 @@ using namespace std;
 class PID_Controller{
     public:
         //Functions
-        PID_Controller();
+        PID_Controller() = default;
+        PID_Controller(float kp, float ki, float kd);
         float compute(float setpoint, float input);
+        void set_P(float kp);
+        void set_I(float ki);
+        void set_D(float kd);
             
     protected:
+        float kp, ki, kd;
         float error, error_prev, error_sum;
 };
 
 class Pursuit_Algorithm {
     public:
-        Pursuit_Algorithm(float missionSpeed);
+        Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd);
         lart_msgs::msg::DynamicsCMD calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped pose,
              float current_speed, float current_steering);
 
@@ -43,6 +48,8 @@ class Pursuit_Algorithm {
         int closest_point_index = -1;
         geometry_msgs::msg::PoseStamped target_point;
         float missionSpeed;
+        float lookahead_time;
+        float tau;
         VehicleModel vehicle = VehicleModel();
 
         // PID Controller

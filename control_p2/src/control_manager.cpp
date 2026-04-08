@@ -96,9 +96,9 @@ void ControlManager::set_pose(geometry_msgs::msg::PoseStamped pose){
     this->currentPose = pose;
 }
 
-void ControlManager::set_missionSpeed(float missionSpeed){
+void ControlManager::set_missionSpeed(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd){
     this->missionSpeed = missionSpeed;
-    this->algorithm = std::make_unique<Pursuit_Algorithm>(this->missionSpeed); // replaces + frees old
+    this->algorithm = std::make_unique<Pursuit_Algorithm>(this->missionSpeed, lookahead_time, tau, kp, ki, kd);
 }
 
 Pursuit_Algorithm * ControlManager::get_algorithm(){

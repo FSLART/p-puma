@@ -1,7 +1,7 @@
 #ifndef TARGET_H_
 #define TARGET_H_
 
-#include "options.hpp"
+#include "utils.hpp"
 #include ALGORITHM
 #include <fstream>
 #include <Eigen/Dense>
@@ -15,7 +15,7 @@ class ControlManager {
         void set_path(lart_msgs::msg::PathSpline path);
         void set_dynamics(lart_msgs::msg::Dynamics dynamics);
         void set_pose(geometry_msgs::msg::PoseStamped pose);
-        void set_missionSpeed(float missionSpeed);
+        void set_missionSpeed(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd);
         lart_msgs::msg::DynamicsCMD getDynamicsCMD();
         Pursuit_Algorithm * get_algorithm();
         lart_msgs::msg::PathSpline get_currentPath();

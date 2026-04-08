@@ -2,11 +2,16 @@
 #define UTILS_H_
 
 /*------------------------------------------------------------------------------*/
-/*                                   INCLUDES                                   */
+/*                              ALGORITHM & MODEL                               */
 /*------------------------------------------------------------------------------*/
 
-//OPTIONS
-#include "options.hpp"
+#define ALGORITHM  "math/acc_pursuit.hpp"
+#define MODEL "model/dry_model.hpp"
+
+
+/*------------------------------------------------------------------------------*/
+/*                                   INCLUDES                                   */
+/*------------------------------------------------------------------------------*/
 
 //Custom msgs
 #include "lart_msgs/msg/dynamics_cmd.hpp"
@@ -50,6 +55,8 @@
 #define MIN_TARGET_INDEX MIN_LOOKAHEAD/SPACE_BETWEEN_POINTS
 
 #define SIZE_AVG_ARRAY 3
+
+#define FREQUENCY 50 // Hz
 
 // PID CONTROLLER SIGNAL LIMITS
 #define MIN_SIG_VAL -1.0f

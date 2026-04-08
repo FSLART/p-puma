@@ -1,7 +1,9 @@
 #include "control_p2/math/acc_pursuit.hpp"
 
-Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed) {
+Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd) {
     this->missionSpeed = missionSpeed;
+    this->lookahead_time = lookahead_time;
+    this->tau = tau;
     
     //Initialize previous output for the first iteration
     this->prevOutput.steering_angle = 0.0f;
@@ -10,7 +12,7 @@ Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed) {
     //Intialize previous time
     this->prevTime = rclcpp::Clock().now();
 
-    this->pid_controller = PID_Controller();
+    this->pid_controller = PID_Controller(kp, ki, kd);
 }
 
 lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped current_pose,
@@ -42,8 +44,6 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     //trasform target to local
     float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
     float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
-    //float shiffet_x = path.poses[this->closest_point_index].pose.position.x - path.poses[0].pose.position.x;
-    //float shiffet_y = path.poses[this->closest_point_index].pose.position.y - path.poses[0].pose.position.y;
     float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
     float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
     
@@ -103,13 +103,13 @@ int Pursuit_Algorithm::fastRound(float x) {
 }
 
 float Pursuit_Algorithm::speed_to_lookahead(float speed){
-    float look_ahead_distance = MIN_LOOKAHEAD + LOOKAHEAD_TIME * speed;
+    float look_ahead_distance = MIN_LOOKAHEAD + this->lookahead_time * speed;
     return look_ahead_distance;
 }
 
 float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
         if (dt <= 0.0) return prevOutput.steering_angle;  // avoid division by zero
-        float alpha = dt / (TAU + dt);
+        float alpha = dt / (this->tau + dt);
         float output = alpha * input + (1.0 - alpha) * prevOutput.steering_angle;
         return output;
 }
@@ -135,8 +135,11 @@ geometry_msgs::msg::PoseStamped Pursuit_Algorithm::get_target_point()
     return this->target_point;
 }
 
-PID_Controller::PID_Controller()
+PID_Controller::PID_Controller(float kp, float ki, float kd)
 {
+    this->kp = kp;
+    this->ki = ki;
+    this->kd = kd;
     error = 0;
     error_prev = 0;
     error_sum = 0;
@@ -148,7 +151,7 @@ float PID_Controller::compute(float setpoint, float input)
     error_sum += error;
     error_prev = error;
 
-    float output = KP * error + KI * error_sum + KD * (error - error_prev);
+    float output = this->kp * error + this->ki * error_sum + this->kd * (error - error_prev);
 
     if(output > MAX_SIG_VAL){
         error_sum -= error;
@@ -159,4 +162,14 @@ float PID_Controller::compute(float setpoint, float input)
     }
 
     return output;
+}
+
+void PID_Controller::set_P(float kp){
+    this->kp = kp;
+}
+void PID_Controller::set_I(float ki){
+    this->ki = ki;
+}
+void PID_Controller::set_D(float kd){
+    this->kd = kd;
 }

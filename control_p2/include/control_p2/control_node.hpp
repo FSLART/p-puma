@@ -43,6 +43,19 @@ protected:
     void dispatchDynamicsCMD();
     void checkTimeStamp();
 
+    // ROS Parameters
+    bool sim_mode;
+    bool log_info;
+    bool target_marker_visible;
+    float default_max_speed;
+    float acc_speed;
+    float ebs_speed;
+    float lookahead_time;
+    float tau;
+    float kp;
+    float ki;
+    float kd;
+
     // Parameters
     bool ready = false;
     bool missionSet = false;

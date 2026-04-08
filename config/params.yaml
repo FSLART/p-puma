@@ -1,0 +1,13 @@
+puma_node:
+  ros__parameters:
+    sim_mode: true
+    log_info: false
+    target_marker_visible: true
+    default_max_speed: 2.0
+    acc_speed: 2.0
+    ebs_speed: 2.0
+    lookahead_time: 0.5
+    tau: 0.01
+    kp: 1.0
+    ki: 0.1
+    kd: 0.05

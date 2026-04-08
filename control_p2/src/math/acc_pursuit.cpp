@@ -98,6 +98,30 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     return control_output;
 }
 
+void Pursuit_Algorithm::set_missionSpeed(float missionSpeed){
+    this->missionSpeed = missionSpeed;
+}
+
+void Pursuit_Algorithm::set_lookahead_time(float lookahead_time){
+    this->lookahead_time = lookahead_time;
+}
+
+void Pursuit_Algorithm::set_tau(float tau){
+    this->tau = tau;
+}
+
+void Pursuit_Algorithm::set_kp(float kp){
+    this->pid_controller.set_P(kp);
+}
+
+void Pursuit_Algorithm::set_ki(float ki){
+    this->pid_controller.set_I(ki);
+}
+
+void Pursuit_Algorithm::set_kd(float kd){
+    this->pid_controller.set_D(kd);
+}
+
 int Pursuit_Algorithm::fastRound(float x) {
     return static_cast<int>(x + 0.5f);
 }

@@ -85,6 +85,13 @@ ControlP2::ControlP2() : Node("control_node")
         TOPIC_SLAM, 10, std::bind(&ControlP2::pose_callback, this, _1));
 
     /*------------------------------------------------------------------------------*/
+    /*                                UPDATE PARAMS                                 */    
+    /*------------------------------------------------------------------------------*/
+    
+    param_callback_handle_ = this->add_on_set_parameters_callback(
+        std::bind(&ControlP2::parametersCallback, this, std::placeholders::_1));
+
+    /*------------------------------------------------------------------------------*/
     /*                            CLASS INITIALIZATION                              */
     /*------------------------------------------------------------------------------*/
     control_manager = new ControlManager();
@@ -96,7 +103,7 @@ ControlP2::ControlP2() : Node("control_node")
         RCLCPP_WARN(this->get_logger(), "SIMULATION MODE ACTIVE: Starting with mission speed");
         this->missionSet = true;
         this->ready = true;
-        this->control_manager->set_missionSpeed(default_max_speed, lookahead_time, tau, kp, ki, kd);
+        this->control_manager->initialize_algorithm(default_max_speed, lookahead_time, tau, kp, ki, kd);
     }
 
 }
@@ -154,7 +161,7 @@ void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
             break;
     }
 
-    this->control_manager->set_missionSpeed(missionSpeed, lookahead_time, tau, kp, ki, kd);
+    this->control_manager->initialize_algorithm(missionSpeed, lookahead_time, tau, kp, ki, kd);
 }
 
 void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)
@@ -211,6 +218,69 @@ void ControlP2::dispatchDynamicsCMD()
     if(log_info){
         this->control_manager->log_info();
     }
+}
+
+rcl_interfaces::msg::SetParametersResult ControlP2::parametersCallback(const std::vector<rclcpp::Parameter> &params)
+{
+
+    for (const auto &param : params)
+    {
+        const std::string &name = param.get_name();
+
+        if (name == "log_info") {
+            log_info = param.as_bool();
+            RCLCPP_INFO(this->get_logger(), "log_info set to: %d", log_info);
+        } 
+        else if (name == "target_marker_visible") {
+            target_marker_visible = param.as_bool();
+            RCLCPP_INFO(this->get_logger(), "target_marker_visible set to: %d", target_marker_visible);
+        } 
+        else if (name == "default_max_speed") {
+            default_max_speed = param.as_double();
+            this->control_manager->set_missionSpeed(default_max_speed);
+            RCLCPP_INFO(this->get_logger(), "default_max_speed set to: %f", default_max_speed);
+        } 
+        else if (name == "acc_speed") {
+            acc_speed = param.as_double();
+            this->control_manager->set_missionSpeed(acc_speed);
+            RCLCPP_INFO(this->get_logger(), "acc_speed set to: %f", acc_speed);
+        } 
+        else if (name == "ebs_speed") {
+            ebs_speed = param.as_double();
+            this->control_manager->set_missionSpeed(ebs_speed);
+            RCLCPP_INFO(this->get_logger(), "ebs_speed set to: %f", ebs_speed);
+        } 
+        else if (name == "lookahead_time") {
+            lookahead_time = param.as_double();
+            this->control_manager->set_lookahead_time(lookahead_time);
+            RCLCPP_INFO(this->get_logger(), "lookahead_time set to: %f", lookahead_time);
+        } 
+        else if (name == "tau") {
+            tau = param.as_double();
+            this->control_manager->set_tau(tau);
+            RCLCPP_INFO(this->get_logger(), "tau set to: %f", tau);
+        } 
+        else if (name == "kp") {
+            kp = param.as_double();
+            this->control_manager->set_kp(kp);
+            RCLCPP_INFO(this->get_logger(), "kp set to: %f", kp);
+        } 
+        else if (name == "ki") {
+            ki = param.as_double();
+            this->control_manager->set_ki(ki);
+            RCLCPP_INFO(this->get_logger(), "ki set to: %f", ki);
+        } 
+        else if (name == "kd") {
+            kd = param.as_double();
+            this->control_manager->set_kd(kd);
+            RCLCPP_INFO(this->get_logger(), "kd set to: %f", kd);
+        }
+    }
+
+    RCLCPP_INFO(this->get_logger(), "Parameters updated at runtime");
+    auto result = rcl_interfaces::msg::SetParametersResult();
+    result.successful = true;
+    return result;
 }
 
 void ControlP2::checkTimeStamp()

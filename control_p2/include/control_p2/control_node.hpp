@@ -5,6 +5,7 @@
 /*                                   INCLUDES                                   */
 /*------------------------------------------------------------------------------*/
 
+#include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 #include "control_manager.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include <optional>
@@ -24,6 +25,7 @@ public:
     void path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg);
     void dynamics_callback(const lart_msgs::msg::Dynamics::SharedPtr msg);
     void pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+    rcl_interfaces::msg::SetParametersResult parametersCallback(const std::vector<rclcpp::Parameter> &params);
     void cleanUp();
 
 private:
@@ -36,6 +38,7 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr position_subscriber;
     rclcpp::Subscription<lart_msgs::msg::PathSpline>::SharedPtr path_subscriber;
     rclcpp::Subscription<lart_msgs::msg::Dynamics>::SharedPtr dynamics_subscriber;
+    rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
 
 protected:
 

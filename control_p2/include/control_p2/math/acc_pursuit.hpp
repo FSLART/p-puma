@@ -34,6 +34,12 @@ class Pursuit_Algorithm {
              float current_speed, float current_steering);
 
         geometry_msgs::msg::PoseStamped get_target_point();
+        void set_missionSpeed(float missionSpeed);
+        void set_lookahead_time(float lookahead_time);
+        void set_tau(float tau);
+        void set_kp(float kp);
+        void set_ki(float ki);
+        void set_kd(float kd);
     private:
         // functions
         float speed_to_lookahead(float speed);

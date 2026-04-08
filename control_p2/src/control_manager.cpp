@@ -96,9 +96,46 @@ void ControlManager::set_pose(geometry_msgs::msg::PoseStamped pose){
     this->currentPose = pose;
 }
 
-void ControlManager::set_missionSpeed(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd){
+void ControlManager::initialize_algorithm(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd){
     this->missionSpeed = missionSpeed;
     this->algorithm = std::make_unique<Pursuit_Algorithm>(this->missionSpeed, lookahead_time, tau, kp, ki, kd);
+}
+
+void ControlManager::set_missionSpeed(float missionSpeed){
+    this->missionSpeed = missionSpeed;
+    if(this->algorithm){
+        this->algorithm->set_missionSpeed(missionSpeed);
+    }
+}
+
+void ControlManager::set_lookahead_time(float lookahead_time){
+    if(this->algorithm){
+        this->algorithm->set_lookahead_time(lookahead_time);
+    }
+}
+
+void ControlManager::set_tau(float tau){
+    if(this->algorithm){
+        this->algorithm->set_tau(tau);
+    }
+}
+
+void ControlManager::set_kp(float kp){
+    if(this->algorithm){
+        this->algorithm->set_kp(kp);
+    }
+}
+
+void ControlManager::set_ki(float ki){
+    if(this->algorithm){
+        this->algorithm->set_ki(ki);
+    }
+}
+
+void ControlManager::set_kd(float kd){
+    if(this->algorithm){
+        this->algorithm->set_kd(kd);
+    }
 }
 
 Pursuit_Algorithm * ControlManager::get_algorithm(){

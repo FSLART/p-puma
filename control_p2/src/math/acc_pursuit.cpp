@@ -47,14 +47,13 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
     float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
     
-
     //update target point
     this->target_point.pose.position.x = final_x;
     this->target_point.pose.position.y = final_y;
 
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Target point: (%.2f, %.2f), Current pose: (%.2f, %.2f), Closest point(%.2f, %.2f), Yaw: %.2f",
-        this->target_point.pose.position.x, this->target_point.pose.position.y, current_pose.pose.position.x, current_pose.pose.position.y, 
-        path.poses[this->closest_point_index].pose.position.x, path.poses[this->closest_point_index].pose.position.y, (float)yaw);
+    // RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Target point: (%.2f, %.2f), Current pose: (%.2f, %.2f), Closest point(%.2f, %.2f), Yaw: %.2f",
+    //     this->target_point.pose.position.x, this->target_point.pose.position.y, current_pose.pose.position.x, current_pose.pose.position.y, 
+    //     path.poses[this->closest_point_index].pose.position.x, path.poses[this->closest_point_index].pose.position.y, (float)yaw);
 
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();

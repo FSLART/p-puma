@@ -2,22 +2,37 @@
 #include <algorithm>
 
 
-Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed) {
-     this->missionSpeed = missionSpeed;
+Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd) {
+    this->missionSpeed = missionSpeed;
+    this->lookahead_time = lookahead_time;
+    this->tau = tau;
+
+    //Initialize previous output for the first iteration
+    this->prevOutput.steering_angle = 0.0f;
+    this->prevOutput.rpm = 0;
  
-     //Initialize previous output for the first iteration
-     this->prevOutput.steering_angle = 0.0f;
-     this->prevOutput.rpm = 0;
- 
-     //Intialize previous time
-     this->prevTime = rclcpp::Clock().now();
+    //Intialize previous time
+    this->prevTime = rclcpp::Clock().now();
+
+    (void)kp; // Unused for this algorithm
+    (void)ki; // Unused for this algorithm
+    (void)kd; // Unused for this algorithm
  }
 
 lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped current_pose,
              float current_speed, float current_steering){
 
+    //Ignore unused parameters
+    (void)current_steering;
+
     //Declare variable to return
     lart_msgs::msg::DynamicsCMD control_output;
+
+    // Calculate look ahead point based on the speed with a min and max distances
+    float look_ahead_distance = clamp(speed_to_lookahead(current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
+
+    // Define the target point
+    this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
 
     // 1. Create a tf2 Quaternion object
     tf2::Quaternion q;
@@ -29,23 +44,15 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     double roll, pitch, yaw;
     tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
 
-    // Calculate look ahead point based on the speed with a min and max distances
-    float look_ahead_distance = clamp(speed_to_lookahead(current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
-
-    // Define the target point
-    this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
-
     // //trasform target to local
-    // float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
-    // float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
-    // float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
-    // float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
-
-    this->target_point = path.poses[this->closest_point_index];
+    float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
+    float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
+    float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
+    float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
 
     //update target point
-    // this->target_point.pose.position.x = final_x;
-    // this->target_point.pose.position.y = final_y;
+    this->target_point.pose.position.x = final_x;
+    this->target_point.pose.position.y = final_y;
 
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();
@@ -63,11 +70,11 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float limited_rpm = prev_rpm + rpm_delta;
     limited_rpm = std::clamp(limited_rpm, 0.0f, (float)MS_TO_RPM(this->missionSpeed));
 
-    // If the target point is in front of the car then consider the desired angle to be 0
+    // If the target point is in front of the car then consider the desired angle to this->target_point = path.poses[this->closest_point_index];
     if(this->target_point.pose.position.y == 0){
 
         // Apply low pass filter to steering angle towards 0
-        control_output.steering_angle = lowPassFilter(0.0f, dt);
+        control_output.steering_angle = clamp(lowPassFilter(0.0f, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
         control_output.rpm = static_cast<decltype(control_output.rpm)>(limited_rpm);
 
         //save previous output
@@ -84,8 +91,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), look_ahead_distance);
 
     // Apply low pass filter to steering angle
-    control_output.steering_angle = lowPassFilter(steering_angle, dt);
-    //control_output.steering_angle = steering_angle;
+    control_output.steering_angle = clamp(lowPassFilter(steering_angle, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
     control_output.rpm = static_cast<decltype(control_output.rpm)>(limited_rpm);
 
     //save previous output
@@ -94,18 +100,42 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     return control_output;
 }
 
+void Pursuit_Algorithm::set_missionSpeed(float missionSpeed){
+    this->missionSpeed = missionSpeed;
+}
+
+void Pursuit_Algorithm::set_lookahead_time(float lookahead_time){
+    this->lookahead_time = lookahead_time;
+}
+
+void Pursuit_Algorithm::set_tau(float tau){
+    this->tau = tau;
+}
+
+void Pursuit_Algorithm::set_kp(float kp){
+    // Not implemented for this algorithm   
+}
+
+void Pursuit_Algorithm::set_ki(float ki){
+    // Not implemented for this algorithm
+}
+
+void Pursuit_Algorithm::set_kd(float kd){
+    // Not implemented for this algorithm
+}
+
 int Pursuit_Algorithm::fastRound(float x) {
     return static_cast<int>(x + 0.5f);
 }
 
 float Pursuit_Algorithm::speed_to_lookahead(float speed){
-    float look_ahead_distance = MIN_LOOKAHEAD + LOOKAHEAD_TIME * speed;
+    float look_ahead_distance = MIN_LOOKAHEAD + this->lookahead_time * speed;
     return look_ahead_distance;
 }
 
 float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
         if (dt <= 0.0) return prevOutput.steering_angle;  // avoid division by zero
-        float alpha = dt / (TAU + dt);
+        float alpha = dt / (this->tau + dt);
         float output = alpha * input + (1.0 - alpha) * prevOutput.steering_angle;
         return output;
 }

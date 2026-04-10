@@ -5,7 +5,7 @@
 /*                              ALGORITHM & MODEL                               */
 /*------------------------------------------------------------------------------*/
 
-#define ALGORITHM  "math/acc_pursuit.hpp"
+#define ALGORITHM  "math/lp_pursuit.hpp"
 #define MODEL "model/dry_model.hpp"
 
 
@@ -57,6 +57,8 @@
 #define SIZE_AVG_ARRAY 3
 
 #define FREQUENCY 50 // Hz
+
+#define MAX_RPM_DELTA 3.0f
 
 // PID CONTROLLER SIGNAL LIMITS
 #define MIN_SIG_VAL -1.0f

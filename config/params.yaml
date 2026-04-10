@@ -1,6 +1,6 @@
 puma_node:
   ros__parameters:
-    sim_mode: false
+    sim_mode: true
     log_info: false
     target_marker_visible: true
     default_max_speed: 2.0

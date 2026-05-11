@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          path: src/p-puma
 
       - name: Install build tools
         run: |
@@ -30,14 +32,14 @@ jobs:
 
       - name: Clone external ROS packages
         run: |
-          git clone -b dev https://github.com/FSLART/lart_msgs.git
-          git clone https://github.com/FSLART/lart_common.git
+          git clone -b dev https://github.com/FSLART/lart_msgs.git src/lart_msgs
+          git clone https://github.com/FSLART/lart_common.git src/lart_common
 
       - name: Install ROS dependencies
         shell: bash
         run: |
           source /opt/ros/humble/setup.bash
-          rosdep install --from-paths . --ignore-src -r -y
+          rosdep install --from-paths src --ignore-src -r -y
 
       - name: Build workspace
         shell: bash

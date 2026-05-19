@@ -19,6 +19,7 @@ class ControlManager {
         void set_missionSpeed(float missionSpeed);
         void set_lookahead_time(float lookahead_time);
         void set_tau(float tau);
+        void set_kv(float kv);
         void set_kp(float kp);
         void set_ki(float ki);
         void set_kd(float kd);

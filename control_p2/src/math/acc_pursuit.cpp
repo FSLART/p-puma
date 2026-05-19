@@ -109,6 +109,10 @@ void Pursuit_Algorithm::set_tau(float tau){
     this->tau = tau;
 }
 
+void Pursuit_Algorithm::set_kv(float kv){
+    this->kv = kv;
+}  
+
 void Pursuit_Algorithm::set_kp(float kp){
     this->pid_controller.set_P(kp);
 }
@@ -145,7 +149,7 @@ float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path)
             curvature = 0.0001f; // Avoid division by zero
         }
 
-        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature));
+        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
         velocity = clamp(velocity, 0.0f, this->missionSpeed);
 
         return velocity;

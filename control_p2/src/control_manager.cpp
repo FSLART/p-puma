@@ -120,6 +120,12 @@ void ControlManager::set_tau(float tau){
     }
 }
 
+void ControlManager::set_kv(float kv){
+    if(this->algorithm){
+        this->algorithm->set_kv(kv);
+    }
+}
+
 void ControlManager::set_kp(float kp){
     if(this->algorithm){
         this->algorithm->set_kp(kp);

@@ -23,6 +23,7 @@ ControlP2::ControlP2() : Node("control_node")
 
     //Algorithm tuning
     this->declare_parameter<float>("tau", 0.01f);
+    this->declare_parameter<float>("kv", 1.0f);
     this->declare_parameter<float>("kp", 1.0f);
     this->declare_parameter<float>("ki", 0.1f);
     this->declare_parameter<float>("kd", 0.05f);
@@ -37,6 +38,7 @@ ControlP2::ControlP2() : Node("control_node")
 
     this->get_parameter("lookahead_time", lookahead_time);
     this->get_parameter("tau", tau);
+    this->get_parameter("kv", kv);
     this->get_parameter("kp", kp);
     this->get_parameter("ki", ki);
     this->get_parameter("kd", kd);
@@ -260,6 +262,11 @@ rcl_interfaces::msg::SetParametersResult ControlP2::parametersCallback(const std
             this->control_manager->set_tau(tau);
             RCLCPP_INFO(this->get_logger(), "tau set to: %f", tau);
         } 
+        else if (name == "kv") {
+            kv = param.as_double();
+            this->control_manager->set_kv(kv);
+            RCLCPP_INFO(this->get_logger(), "kv set to: %f", kv);
+        }
         else if (name == "kp") {
             kp = param.as_double();
             this->control_manager->set_kp(kp);

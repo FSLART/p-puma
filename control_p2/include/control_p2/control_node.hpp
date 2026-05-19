@@ -55,6 +55,7 @@ protected:
     float ebs_speed;
     float lookahead_time;
     float tau;
+    float kv;
     float kp;
     float ki;
     float kd;

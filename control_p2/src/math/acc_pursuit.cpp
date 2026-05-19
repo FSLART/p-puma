@@ -1,10 +1,11 @@
 #include "control_p2/math/acc_pursuit.hpp"
 
-Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd) {
+Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float kp, float ki, float kd) {
     this->missionSpeed = missionSpeed;
     this->lookahead_time = lookahead_time;
     this->tau = tau;
-    
+    this->kv = kv;
+
     //Initialize previous output for the first iteration
     this->prevOutput.steering_angle = 0.0f;
     this->prevOutput.acc_cmd = 0.0f;
@@ -150,6 +151,7 @@ float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path)
         }
 
         float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
+        RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/curvature));
         velocity = clamp(velocity, 0.0f, this->missionSpeed);
 
         return velocity;

@@ -29,7 +29,7 @@ class PID_Controller{
 
 class Pursuit_Algorithm {
     public:
-        Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd);
+        Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float kp, float ki, float kd);
         lart_msgs::msg::DynamicsCMD calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped pose,
              float current_speed, float current_steering);
 

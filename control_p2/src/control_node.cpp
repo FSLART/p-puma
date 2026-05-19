@@ -44,8 +44,8 @@ ControlP2::ControlP2() : Node("control_node")
     this->get_parameter("kd", kd);
 
 
-    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, default_max_speed: %.2f, acc_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
-        sim_mode, log_info, target_marker_visible, default_max_speed, acc_speed, ebs_speed, lookahead_time, tau, kp, ki, kd);
+    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, default_max_speed: %.2f, acc_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kv: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
+        sim_mode, log_info, target_marker_visible, default_max_speed, acc_speed, ebs_speed, lookahead_time, tau, kv, kp, ki, kd);
 
     /*------------------------------------------------------------------------------*/
     /*                                   PUBLISHERS                                 */
@@ -105,7 +105,7 @@ ControlP2::ControlP2() : Node("control_node")
         RCLCPP_WARN(this->get_logger(), "SIMULATION MODE ACTIVE: Starting with mission speed");
         this->missionSet = true;
         this->ready = true;
-        this->control_manager->initialize_algorithm(default_max_speed, lookahead_time, tau, kp, ki, kd);
+        this->control_manager->initialize_algorithm(default_max_speed, lookahead_time, tau, kv, kp, ki, kd);
     }
 
 }
@@ -163,7 +163,7 @@ void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
             break;
     }
 
-    this->control_manager->initialize_algorithm(missionSpeed, lookahead_time, tau, kp, ki, kd);
+    this->control_manager->initialize_algorithm(missionSpeed, lookahead_time, tau, kv, kp, ki, kd);
 }
 
 void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)

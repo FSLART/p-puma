@@ -15,7 +15,7 @@ class ControlManager {
         void set_path(lart_msgs::msg::PathSpline path);
         void set_dynamics(lart_msgs::msg::Dynamics dynamics);
         void set_pose(geometry_msgs::msg::PoseStamped pose);
-        void initialize_algorithm(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd);
+        void initialize_algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float kp, float ki, float kd);
         void set_missionSpeed(float missionSpeed);
         void set_lookahead_time(float lookahead_time);
         void set_tau(float tau);

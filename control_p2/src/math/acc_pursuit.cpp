@@ -65,14 +65,31 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float desired_speed = calculate_desiredSpeed(path);
 
     // Apply PID controller to define the aceleration
-    float acc_cmd = this->pid_controller.compute(desired_speed, current_speed);
+    // float acc_cmd = this->pid_controller.compute(desired_speed, current_speed);
+    float acc_cmd = this->pid_controller.compute(desired_speed, current_speed, dt);
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Desired speed: %.2f, Current speed: %.2f, Acc cmd before clamp: %.2f",desired_speed, current_speed, acc_cmd);
+
     acc_cmd = clamp(acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Acc cmd after clamp: %.2f", acc_cmd);
+
+    //limit aceleration jerk by limitng the change in acceleration
+    // float max_jerk = 1.0f;
+    // float max_delta = max_jerk * dt;
+
+    // float delta = acc_cmd - prevOutput.acc_cmd;
+
+    // delta = clamp(delta,
+    //             -max_delta,
+    //             max_delta);
+
+    // acc_cmd = prevOutput.acc_cmd + delta;
 
     // If the target point is in front of the car then consider the desired angle to be 0
-    if(this->target_point.pose.position.y == 0){
+    if(abs(this->target_point.pose.position.y) < 0.01){
 
         // Apply low pass filter to steering angle towards 0
-        control_output.steering_angle = clamp(lowPassFilter(0.0f, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
+        //control_output.steering_angle = clamp(lowPassFilter(0.0f, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
+        control_output.steering_angle = clamp(0.0f, (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
         control_output.acc_cmd = acc_cmd;
 
         //save previous output
@@ -89,7 +106,8 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), look_ahead_distance);
 
     // Apply low pass filter to steering angle
-    control_output.steering_angle = clamp(lowPassFilter(steering_angle, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
+    //control_output.steering_angle = clamp(lowPassFilter(steering_angle, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
+    control_output.steering_angle = clamp(steering_angle, (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
     control_output.acc_cmd = acc_cmd;
 
     //save previous output
@@ -174,19 +192,51 @@ PID_Controller::PID_Controller(float kp, float ki, float kd)
     error_sum = 0;
 }
 
-float PID_Controller::compute(float setpoint, float input)
+// float PID_Controller::compute(float setpoint, float input)
+// {
+//     error = setpoint - input;
+//     error_sum += error;
+//     error_prev = error;
+
+//     float output = this->kp * error + this->ki * error_sum + this->kd * (error - error_prev);
+
+//     if(output > MAX_SIG_VAL){
+//         error_sum -= error;
+//         output = MAX_SIG_VAL;
+//     }else if(output < MIN_SIG_VAL){
+//         error_sum -= error;
+//         output = MIN_SIG_VAL;
+//     }
+
+//     return output;
+// }
+
+float PID_Controller::compute(float setpoint, float input, float dt)
 {
     error = setpoint - input;
-    error_sum += error;
+
+    // Integral
+    error_sum += error * dt;
+
+    // Derivative
+    float derivative = (error - error_prev) / dt;
+
+    // PID output
+    float output =
+        kp * error +
+        ki * error_sum +
+        kd * derivative;
+
+    // Save previous error
     error_prev = error;
 
-    float output = this->kp * error + this->ki * error_sum + this->kd * (error - error_prev);
-
+    // Clamp + anti-windup
     if(output > MAX_SIG_VAL){
-        error_sum -= error;
+        error_sum -= error * dt;
         output = MAX_SIG_VAL;
-    }else if(output < MIN_SIG_VAL){
-        error_sum -= error;
+    }
+    else if(output < MIN_SIG_VAL){
+        error_sum -= error * dt;
         output = MIN_SIG_VAL;
     }
 

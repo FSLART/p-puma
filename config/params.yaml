@@ -9,6 +9,6 @@ puma_node:
     lookahead_time: 0.2
     tau: 0.001
     kv: 0.2
-    kp: 0.5
-    ki: 0.1
-    kd: 0.05
+    kp: 0.11
+    ki: 0.005
+    kd: 0.0

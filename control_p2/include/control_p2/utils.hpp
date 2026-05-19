@@ -62,7 +62,7 @@
 
 // PID CONTROLLER SIGNAL LIMITS
 #define MIN_SIG_VAL -1.0f
-#define MAX_SIG_VAL 1.0f
+#define MAX_SIG_VAL 0.5f
 
 
 #endif

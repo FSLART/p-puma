@@ -17,7 +17,7 @@ class PID_Controller{
         //Functions
         PID_Controller() = default;
         PID_Controller(float kp, float ki, float kd);
-        float compute(float setpoint, float input);
+        float compute(float setpoint, float input, float dt);
         void set_P(float kp);
         void set_I(float ki);
         void set_D(float kd);

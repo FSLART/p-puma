@@ -64,6 +64,13 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // Calculate desired speed and limit acceleration
     float desired_speed = calculate_desiredSpeed(path);
 
+    //Limit change of desired speed per iteration
+    float max_change = 1.0f; // Max change in speed per iteration
+    float speed_diff = desired_speed - current_speed;
+    if (speed_diff > max_change) {
+        desired_speed = current_speed + max_change;
+    }
+
     // Apply PID controller to define the aceleration
     // float acc_cmd = this->pid_controller.compute(desired_speed, current_speed);
     float acc_cmd = this->pid_controller.compute(desired_speed, current_speed, dt);
@@ -71,18 +78,6 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     acc_cmd = clamp(acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
     RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Acc cmd after clamp: %.2f", acc_cmd);
-
-    //limit aceleration jerk by limitng the change in acceleration
-    // float max_jerk = 1.0f;
-    // float max_delta = max_jerk * dt;
-
-    // float delta = acc_cmd - prevOutput.acc_cmd;
-
-    // delta = clamp(delta,
-    //             -max_delta,
-    //             max_delta);
-
-    // acc_cmd = prevOutput.acc_cmd + delta;
 
     // If the target point is in front of the car then consider the desired angle to be 0
     if(abs(this->target_point.pose.position.y) < 0.01){
@@ -160,22 +155,42 @@ float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
         return output;
 }
 
+// float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path){
+//     if(closest_point_index > -1){
+//         float curvature = std::abs(path.curvature[closest_point_index]);
+
+//         if(curvature < 0.0001f){
+//             curvature = 0.0001f; // Avoid division by zero
+//         }
+
+//         float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
+//         RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/curvature));
+//         velocity = clamp(velocity, 0.0f, this->missionSpeed);
+
+//         return velocity;
+//     }
+//     return 0.0f;
+// }
+
 float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path){
     if(closest_point_index > -1){
-        float curvature = std::abs(path.curvature[closest_point_index]);
+        float sum_velocity = 0.0;
 
-        if(curvature < 0.0001f){
-            curvature = 0.0001f; // Avoid division by zero
+        for(int i = 0; i<30; i++){
+            float curvature = std::abs(path.curvature[i]);
+            if(curvature < 0.0001f){
+                curvature = 0.0001f; // Avoid division by zero
+            }
+            sum_velocity += std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
         }
-
-        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
-        RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/curvature));
+        float velocity = sum_velocity / 30.0f; // Average velocity
         velocity = clamp(velocity, 0.0f, this->missionSpeed);
 
         return velocity;
     }
     return 0.0f;
 }
+
 
 geometry_msgs::msg::PoseStamped Pursuit_Algorithm::get_target_point()
 {

@@ -47,6 +47,7 @@ class Pursuit_Algorithm {
         int fastRound(float x);
         float calculate_desiredSpeed(lart_msgs::msg::PathSpline path);
         float lowPassFilter(float input, float dt);
+        float preview_curvature(lart_msgs::msg::PathSpline path);
         
         // Parameters
         lart_msgs::msg::DynamicsCMD prevOutput;

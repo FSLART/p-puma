@@ -34,6 +34,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // 1. Create a tf2 Quaternion object
     tf2::Quaternion q;
 
+
     // 2. Convert the message quaternion to the tf2 object
     tf2::fromMsg(current_pose.pose.orientation, q);
 
@@ -52,9 +53,9 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     this->target_point.pose.position.x = final_x;
     this->target_point.pose.position.y = final_y;
 
-    // RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Target point: (%.2f, %.2f), Current pose: (%.2f, %.2f), Closest point(%.2f, %.2f), Yaw: %.2f",
-    //     this->target_point.pose.position.x, this->target_point.pose.position.y, current_pose.pose.position.x, current_pose.pose.position.y, 
-    //     path.poses[this->closest_point_index].pose.position.x, path.poses[this->closest_point_index].pose.position.y, (float)yaw);
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Target point: (%.2f, %.2f), Current pose: (%.2f, %.2f), Closest point(%.2f, %.2f), Yaw: %.2f",
+        this->target_point.pose.position.x, this->target_point.pose.position.y, current_pose.pose.position.x, current_pose.pose.position.y, 
+        path.poses[this->closest_point_index].pose.position.x, path.poses[this->closest_point_index].pose.position.y, (float)yaw);
 
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();
@@ -155,41 +156,48 @@ float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
         return output;
 }
 
+float Pursuit_Algorithm::preview_curvature(lart_msgs::msg::PathSpline path){
+    float sum_curvature = 0.0f;
+    for(int i = 0; i < PATH_SIZE; i++){
+        float curvature = std::abs(path.curvature[i]);
+        sum_curvature += curvature;
+    }
+    float preview_curvature = sum_curvature / PATH_SIZE;
+    return preview_curvature;
+}
+
+float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path){
+    if(closest_point_index > -1){ 
+        float curvature = preview_curvature(path);
+        if(curvature < 0.0001f){
+            curvature = 0.0001f; // Avoid division by zero
+        }
+        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
+        RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/curvature));
+        velocity = clamp(velocity, 0.0f, this->missionSpeed);
+        return velocity;
+    }
+    return 0.0f;
+}
+
 // float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path){
 //     if(closest_point_index > -1){
-//         float curvature = std::abs(path.curvature[closest_point_index]);
+//         float sum_velocity = 0.0;
 
-//         if(curvature < 0.0001f){
-//             curvature = 0.0001f; // Avoid division by zero
+//         for(int i = 0; i<30; i++){
+//             float curvature = std::abs(path.curvature[i]);
+//             if(curvature < 0.0001f){
+//                 curvature = 0.0001f; // Avoid division by zero
+//             }
+//             sum_velocity += std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
 //         }
-
-//         float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
-//         RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/curvature));
+//         float velocity = sum_velocity / 30.0f; // Average velocity
 //         velocity = clamp(velocity, 0.0f, this->missionSpeed);
 
 //         return velocity;
 //     }
 //     return 0.0f;
 // }
-
-float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path){
-    if(closest_point_index > -1){
-        float sum_velocity = 0.0;
-
-        for(int i = 0; i<30; i++){
-            float curvature = std::abs(path.curvature[i]);
-            if(curvature < 0.0001f){
-                curvature = 0.0001f; // Avoid division by zero
-            }
-            sum_velocity += std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
-        }
-        float velocity = sum_velocity / 30.0f; // Average velocity
-        velocity = clamp(velocity, 0.0f, this->missionSpeed);
-
-        return velocity;
-    }
-    return 0.0f;
-}
 
 
 geometry_msgs::msg::PoseStamped Pursuit_Algorithm::get_target_point()

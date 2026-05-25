@@ -7,7 +7,7 @@ puma_node:
     acc_speed: 2.0
     ebs_speed: 2.0
     lookahead_time: 0.4
-    tau: 0.2
+    tau: 0.1
     kv: 0.2
     kp: 0.11
     ki: 0.005

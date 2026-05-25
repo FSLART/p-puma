@@ -56,6 +56,7 @@ protected:
     float lookahead_time;
     float tau;
     float kv;
+    float curvature_gain;
     float kp;
     float ki;
     float kd;

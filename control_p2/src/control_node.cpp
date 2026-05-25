@@ -24,6 +24,7 @@ ControlP2::ControlP2() : Node("control_node")
     //Algorithm tuning
     this->declare_parameter<float>("tau", 0.01f);
     this->declare_parameter<float>("kv", 1.0f);
+    this->declare_parameter<float>("curvature_gain", 0.1f);
     this->declare_parameter<float>("kp", 1.0f);
     this->declare_parameter<float>("ki", 0.1f);
     this->declare_parameter<float>("kd", 0.05f);
@@ -39,13 +40,14 @@ ControlP2::ControlP2() : Node("control_node")
     this->get_parameter("lookahead_time", lookahead_time);
     this->get_parameter("tau", tau);
     this->get_parameter("kv", kv);
+    this->get_parameter("curvature_gain", curvature_gain);
     this->get_parameter("kp", kp);
     this->get_parameter("ki", ki);
     this->get_parameter("kd", kd);
 
 
-    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, default_max_speed: %.2f, acc_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kv: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
-        sim_mode, log_info, target_marker_visible, default_max_speed, acc_speed, ebs_speed, lookahead_time, tau, kv, kp, ki, kd);
+    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, default_max_speed: %.2f, acc_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kv: %.2f, curvature_gain: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
+        sim_mode, log_info, target_marker_visible, default_max_speed, acc_speed, ebs_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
 
     /*------------------------------------------------------------------------------*/
     /*                                   PUBLISHERS                                 */
@@ -105,7 +107,7 @@ ControlP2::ControlP2() : Node("control_node")
         RCLCPP_WARN(this->get_logger(), "SIMULATION MODE ACTIVE: Starting with mission speed");
         this->missionSet = true;
         this->ready = true;
-        this->control_manager->initialize_algorithm(default_max_speed, lookahead_time, tau, kv, kp, ki, kd);
+        this->control_manager->initialize_algorithm(default_max_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
     }
 
 }
@@ -163,7 +165,7 @@ void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
             break;
     }
 
-    this->control_manager->initialize_algorithm(missionSpeed, lookahead_time, tau, kv, kp, ki, kd);
+    this->control_manager->initialize_algorithm(missionSpeed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
 }
 
 void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)
@@ -266,6 +268,11 @@ rcl_interfaces::msg::SetParametersResult ControlP2::parametersCallback(const std
             kv = param.as_double();
             this->control_manager->set_kv(kv);
             RCLCPP_INFO(this->get_logger(), "kv set to: %f", kv);
+        }
+        else if (name == "curvature_gain") {
+            curvature_gain = param.as_double();
+            this->control_manager->set_curvature_gain(curvature_gain);
+            RCLCPP_INFO(this->get_logger(), "curvature_gain set to: %f", curvature_gain);
         }
         else if (name == "kp") {
             kp = param.as_double();

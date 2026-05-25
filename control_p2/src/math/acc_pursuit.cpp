@@ -1,11 +1,12 @@
 #include "control_p2/math/acc_pursuit.hpp"
 
-Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float kp, float ki, float kd) {
+Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd) {
     this->missionSpeed = missionSpeed;
     this->lookahead_time = lookahead_time;
     this->tau = tau;
     this->kv = kv;
-
+    this->curvature_gain = curvature_gain;
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), " curvature_gain: %.2f", curvature_gain);
     //Initialize previous output for the first iteration
     this->prevOutput.steering_angle = 0.0f;
     this->prevOutput.acc_cmd = 0.0f;
@@ -26,7 +27,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     lart_msgs::msg::DynamicsCMD control_output;
 
     // Calculate look ahead point based on the speed with a min and max distances
-    float look_ahead_distance = clamp(speed_to_lookahead(current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
+    float look_ahead_distance = clamp(calculate_lookahead(path, current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
 
     // Define the target point
     this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
@@ -53,10 +54,6 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     this->target_point.pose.position.x = final_x;
     this->target_point.pose.position.y = final_y;
 
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Target point: (%.2f, %.2f), Current pose: (%.2f, %.2f), Closest point(%.2f, %.2f), Yaw: %.2f",
-        this->target_point.pose.position.x, this->target_point.pose.position.y, current_pose.pose.position.x, current_pose.pose.position.y, 
-        path.poses[this->closest_point_index].pose.position.x, path.poses[this->closest_point_index].pose.position.y, (float)yaw);
-
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();
     float dt = (currentTime - this->prevTime).seconds();
@@ -75,10 +72,8 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // Apply PID controller to define the aceleration
     // float acc_cmd = this->pid_controller.compute(desired_speed, current_speed);
     float acc_cmd = this->pid_controller.compute(desired_speed, current_speed, dt);
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Desired speed: %.2f, Current speed: %.2f, Acc cmd before clamp: %.2f",desired_speed, current_speed, acc_cmd);
 
     acc_cmd = clamp(acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Acc cmd after clamp: %.2f", acc_cmd);
 
     // If the target point is in front of the car then consider the desired angle to be 0
     if(abs(this->target_point.pose.position.y) < 0.01){
@@ -128,6 +123,10 @@ void Pursuit_Algorithm::set_kv(float kv){
     this->kv = kv;
 }  
 
+void Pursuit_Algorithm::set_curvature_gain(float curvature_gain){
+    this->curvature_gain = curvature_gain;
+}
+
 void Pursuit_Algorithm::set_kp(float kp){
     this->pid_controller.set_P(kp);
 }
@@ -144,8 +143,10 @@ int Pursuit_Algorithm::fastRound(float x) {
     return static_cast<int>(x + 0.5f);
 }
 
-float Pursuit_Algorithm::speed_to_lookahead(float speed){
-    float look_ahead_distance = MIN_LOOKAHEAD + this->lookahead_time * speed;
+float Pursuit_Algorithm::calculate_lookahead(lart_msgs::msg::PathSpline path, float speed){
+    // Lookahead distance increases with speed and decreases with curvature
+    float look_ahead_distance = (MIN_LOOKAHEAD + this->lookahead_time * speed)/(1.0f + this->curvature_gain * preview_curvature(path)); 
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Calculated lookahead distance: %.2f, Speed: %.2f, Curvature gain: %.2f, Preview curvature: %.4f", look_ahead_distance, speed, this->curvature_gain, preview_curvature(path));
     return look_ahead_distance;
 }
 
@@ -173,7 +174,7 @@ float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path)
             curvature = 0.0001f; // Avoid division by zero
         }
         float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
-        RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/curvature));
+        //RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/curvature));
         velocity = clamp(velocity, 0.0f, this->missionSpeed);
         return velocity;
     }

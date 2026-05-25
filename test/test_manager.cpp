@@ -80,7 +80,7 @@ TEST (tst_manager, GetStraightPathAngle){
     ControlManager controlManager;
 
     // Set up the control manager with the test data
-    controlManager.initialize_algorithm(5.0, 0.5, 0.1, 0.1, 0.2, 0.05, 0.01);
+    controlManager.initialize_algorithm(5.0, 0.5, 0.1, 0.1,0.1, 0.2, 0.05, 0.01);
     controlManager.set_path(path);
     controlManager.set_dynamics(dynamics);
     controlManager.set_pose(pose_stamped);
@@ -145,7 +145,7 @@ TEST (tst_manager, get_straight_angle){
     ControlManager controlManager;
 
     // Set up the control manager with the test data
-    controlManager.initialize_algorithm(5.0, 0.5, 0.1, 0.1, 0.2, 0.05, 0.01);
+    controlManager.initialize_algorithm(5.0, 0.5, 0.1, 0.1,0.1, 0.2, 0.05, 0.01);
     controlManager.set_path(path);
     controlManager.set_dynamics(dynamics);
     controlManager.set_pose(pose_stamped);

@@ -29,7 +29,7 @@ class PID_Controller{
 
 class Pursuit_Algorithm {
     public:
-        Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float kp, float ki, float kd);
+        Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd);
         lart_msgs::msg::DynamicsCMD calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped pose,
              float current_speed, float current_steering);
 
@@ -38,12 +38,13 @@ class Pursuit_Algorithm {
         void set_lookahead_time(float lookahead_time);
         void set_tau(float tau);
         void set_kv(float kv);
+        void set_curvature_gain(float curvature_gain);
         void set_kp(float kp);
         void set_ki(float ki);
         void set_kd(float kd);
     private:
         // functions
-        float speed_to_lookahead(float speed);
+        float calculate_lookahead(lart_msgs::msg::PathSpline path, float speed);
         int fastRound(float x);
         float calculate_desiredSpeed(lart_msgs::msg::PathSpline path);
         float lowPassFilter(float input, float dt);
@@ -59,6 +60,7 @@ class Pursuit_Algorithm {
         float lookahead_time;
         float tau;
         float kv;
+        float curvature_gain;
         VehicleModel vehicle = VehicleModel();
 
         // PID Controller

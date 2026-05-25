@@ -96,9 +96,9 @@ void ControlManager::set_pose(geometry_msgs::msg::PoseStamped pose){
     this->currentPose = pose;
 }
 
-void ControlManager::initialize_algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float kp, float ki, float kd){
+void ControlManager::initialize_algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd){
     this->missionSpeed = missionSpeed;
-    this->algorithm = std::make_unique<Pursuit_Algorithm>(this->missionSpeed, lookahead_time, tau, kv, kp, ki, kd);
+    this->algorithm = std::make_unique<Pursuit_Algorithm>(this->missionSpeed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
 }
 
 void ControlManager::set_missionSpeed(float missionSpeed){
@@ -117,6 +117,12 @@ void ControlManager::set_lookahead_time(float lookahead_time){
 void ControlManager::set_tau(float tau){
     if(this->algorithm){
         this->algorithm->set_tau(tau);
+    }
+}
+
+void ControlManager::set_curvature_gain(float curvature_gain){
+    if(this->algorithm){
+        this->algorithm->set_curvature_gain(curvature_gain);
     }
 }
 

@@ -5,7 +5,7 @@
 /*                              ALGORITHM & MODEL                               */
 /*------------------------------------------------------------------------------*/
 
-#define ALGORITHM  "math/ff_pursuit.hpp"
+#define ALGORITHM  "math/stanley_test.hpp"
 #define MODEL "model/dry_model.hpp"
 
 

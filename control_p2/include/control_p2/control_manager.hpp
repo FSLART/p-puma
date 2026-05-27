@@ -43,7 +43,6 @@ class ControlManager {
         float missionSpeed;
         geometry_msgs::msg::PoseStamped currentPose;
         lart_msgs::msg::PathSpline currentPath;
-
     
 };
 

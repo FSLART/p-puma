@@ -19,6 +19,7 @@
 #include "lart_msgs/msg/path_spline.hpp"
 #include "lart_msgs/msg/state.hpp"
 #include "lart_msgs/msg/mission.hpp"
+#include "lart_msgs/msg/slam_stats.hpp"
 
 // Common values
 #include "lart_common.h"
@@ -36,6 +37,7 @@
 #define TOPIC_STATE "/pc_origin/system_status/critical_as/state"
 #define TOPIC_MISSION "/pc_origin/system_status/critical_as/mission"
 #define TOPIC_SLAM "/slam/pose"
+#define TOPIC_SLAM_STATS "/slam/stats"
 #define TOPIC_TARGET_MARKER "/target_marker_topic"
 
 /*------------------------------------------------------------------------------*/

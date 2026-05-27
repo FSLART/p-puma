@@ -12,11 +12,14 @@ ControlP2::ControlP2() : Node("control_node")
     this->declare_parameter<bool>("sim_mode", false);
     this->declare_parameter<bool>("log_info", false);
     this->declare_parameter<bool>("target_marker_visible", true);
+    this->declare_parameter<bool>("fsl_flag", false);
 
     //Mission speeds
     this->declare_parameter<float>("default_max_speed", 2.0f);
     this->declare_parameter<float>("acc_speed", 2.0f);
+    this->declare_parameter<float>("skidpad_speed", 2.0f);
     this->declare_parameter<float>("ebs_speed", 2.0f);
+    this->declare_parameter<float>("fsl_speed", 10.0f);
 
     //Lookahead tuning
     this->declare_parameter<float>("lookahead_time", 0.5f);
@@ -32,11 +35,13 @@ ControlP2::ControlP2() : Node("control_node")
     this->get_parameter("sim_mode", sim_mode);
     this->get_parameter("log_info", log_info);
     this->get_parameter("target_marker_visible", target_marker_visible);
+    this->get_parameter("fsl_flag", fsl_flag);
     
     this->get_parameter("default_max_speed",default_max_speed);
     this->get_parameter("acc_speed",acc_speed);
+    this->get_parameter("skidpad_speed",skidpad_speed);
     this->get_parameter("ebs_speed",ebs_speed);
-
+    this->get_parameter("fsl_speed",fsl_speed);
     this->get_parameter("lookahead_time", lookahead_time);
     this->get_parameter("tau", tau);
     this->get_parameter("kv", kv);
@@ -46,8 +51,8 @@ ControlP2::ControlP2() : Node("control_node")
     this->get_parameter("kd", kd);
 
 
-    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, default_max_speed: %.2f, acc_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kv: %.2f, curvature_gain: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
-        sim_mode, log_info, target_marker_visible, default_max_speed, acc_speed, ebs_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
+    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, fsl_flag: %d, fsl_speed: %.2f, default_max_speed: %.2f, acc_speed: %.2f, skidpad_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kv: %.2f, curvature_gain: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
+        sim_mode, log_info, target_marker_visible, fsl_flag, fsl_speed, default_max_speed, acc_speed, skidpad_speed, ebs_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
 
     /*------------------------------------------------------------------------------*/
     /*                                   PUBLISHERS                                 */
@@ -87,6 +92,9 @@ ControlP2::ControlP2() : Node("control_node")
 
     position_subscriber = this->create_subscription<geometry_msgs::msg::PoseStamped>(
         TOPIC_SLAM, 10, std::bind(&ControlP2::pose_callback, this, _1));
+    
+    lap_subscriber = this->create_subscription<lart_msgs::msg::SlamStats>(
+        TOPIC_SLAM_STATS, 10, std::bind(&ControlP2::lap_callback, this, _1));
 
     /*------------------------------------------------------------------------------*/
     /*                                UPDATE PARAMS                                 */    
@@ -106,6 +114,7 @@ ControlP2::ControlP2() : Node("control_node")
     if(sim_mode){
         RCLCPP_WARN(this->get_logger(), "SIMULATION MODE ACTIVE: Starting with mission speed");
         this->missionSet = true;
+        this->current_mission = lart_msgs::msg::Mission::TRACKDRIVE; // Default mission for simulation
         this->ready = true;
         this->control_manager->initialize_algorithm(default_max_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
     }
@@ -165,7 +174,19 @@ void ControlP2::mission_callback(const lart_msgs::msg::Mission::SharedPtr msg)
             break;
     }
 
+    //Save current mission
+    this->current_mission = msg->data;
+
     this->control_manager->initialize_algorithm(missionSpeed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
+}
+
+void ControlP2::lap_callback(const lart_msgs::msg::SlamStats::SharedPtr msg)
+{
+    if(this->missionSet && this->current_mission == lart_msgs::msg::Mission::TRACKDRIVE && msg->lap_count == 1 && this->fsl_flag){
+        RCLCPP_WARN(this->get_logger(), "First lap completed, activating FSL mode");
+        this->fsl_flag = false;
+        this->control_manager->set_missionSpeed(fsl_speed);
+    }
 }
 
 void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)
@@ -248,7 +269,12 @@ rcl_interfaces::msg::SetParametersResult ControlP2::parametersCallback(const std
             acc_speed = param.as_double();
             this->control_manager->set_missionSpeed(acc_speed);
             RCLCPP_INFO(this->get_logger(), "acc_speed set to: %f", acc_speed);
-        } 
+        }
+        else if (name == "skidpad_speed") {
+            skidpad_speed = param.as_double();
+            this->control_manager->set_missionSpeed(skidpad_speed);
+            RCLCPP_INFO(this->get_logger(), "skidpad_speed set to: %f", skidpad_speed);
+        }
         else if (name == "ebs_speed") {
             ebs_speed = param.as_double();
             this->control_manager->set_missionSpeed(ebs_speed);

@@ -25,6 +25,7 @@ public:
     void path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg);
     void dynamics_callback(const lart_msgs::msg::Dynamics::SharedPtr msg);
     void pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+    void lap_callback(const lart_msgs::msg::SlamStats::SharedPtr msg);
     rcl_interfaces::msg::SetParametersResult parametersCallback(const std::vector<rclcpp::Parameter> &params);
     void cleanUp();
 
@@ -38,6 +39,7 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr position_subscriber;
     rclcpp::Subscription<lart_msgs::msg::PathSpline>::SharedPtr path_subscriber;
     rclcpp::Subscription<lart_msgs::msg::Dynamics>::SharedPtr dynamics_subscriber;
+    rclcpp::Subscription<lart_msgs::msg::SlamStats>::SharedPtr lap_subscriber;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
 
 protected:
@@ -50,8 +52,11 @@ protected:
     bool sim_mode;
     bool log_info;
     bool target_marker_visible;
+    bool fsl_flag;
+    float fsl_speed;
     float default_max_speed;
     float acc_speed;
+    float skidpad_speed;
     float ebs_speed;
     float lookahead_time;
     float tau;
@@ -64,6 +69,7 @@ protected:
     // Parameters
     bool ready = false;
     bool missionSet = false;
+    uint8_t current_mission;
     std::optional<std::chrono::steady_clock::time_point> drivingSignalTimeStamp;
     rclcpp::TimerBase::SharedPtr control_timer;
 

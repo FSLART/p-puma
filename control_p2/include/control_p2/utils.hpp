@@ -5,7 +5,7 @@
 /*                              ALGORITHM & MODEL                               */
 /*------------------------------------------------------------------------------*/
 
-#define ALGORITHM  "math/stanley_test.hpp"
+#define ALGORITHM  "math/acc_pursuit.hpp"
 #define MODEL "model/dry_model.hpp"
 
 
@@ -61,6 +61,7 @@
 #define FREQUENCY 50 // Hz
 
 #define MAX_RPM_DELTA 3.0f
+#define MAX_MS_DELTA 0.05f
 
 // PID CONTROLLER SIGNAL LIMITS
 #define MIN_SIG_VAL -1.0f

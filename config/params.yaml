@@ -4,7 +4,7 @@ puma_node:
     log_info: false
     target_marker_visible: true
     fsl_flag: true
-    fsl_speed: 10.0
+    fsl_speed: 8.0
     default_max_speed: 3.0
     acc_speed: 2.0
     skidpad_speed: 2.0
@@ -12,7 +12,7 @@ puma_node:
     lookahead_time: 0.5
     tau: 0.05
     kv: 0.2
-    curvature_gain: 0.9
-    kp: 0.11
-    ki: 0.005
+    curvature_gain: 2.0
+    kp: 0.04
+    ki: 0.008
     kd: 0.0

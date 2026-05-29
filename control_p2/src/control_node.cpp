@@ -232,6 +232,7 @@ void ControlP2::dispatchDynamicsCMD()
 
     // publish dynamics command
     this->dynamics_publisher->publish(control_output);
+    RCLCPP_INFO(this->get_logger(), "Published DynamicsCMD: rpm: %d, steering_angle: %f, acc_cmd: %f", control_output.rpm, control_output.steering_angle, control_output.acc_cmd);
 
     // publish target marker
     if(target_marker_visible){

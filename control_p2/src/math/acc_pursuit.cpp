@@ -148,12 +148,16 @@ float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
 
 float Pursuit_Algorithm::preview_abs_curvature(lart_msgs::msg::PathSpline path){
     float sum_curvature = 0.0f;
+    float sum_weights = 0.0f;
     for(int i = 0; i < PATH_SIZE; i++){
+        float weight = static_cast<float>(PATH_SIZE - i);
+        sum_weights += weight;
+
         float curvature = std::abs(path.curvature[i]);
         //float curvature = path.curvature[i];
-        sum_curvature += curvature;
+        sum_curvature += curvature * weight;
     }
-    float preview_curvature = sum_curvature / PATH_SIZE;
+    float preview_curvature = sum_curvature / sum_weights;
     return preview_curvature;
 }
 

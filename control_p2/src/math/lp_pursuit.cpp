@@ -2,10 +2,12 @@
 #include <algorithm>
 
 
-Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kp, float ki, float kd) {
+Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau,float kv, float curvature_gain, float kp, float ki, float kd) {
     this->missionSpeed = missionSpeed;
     this->lookahead_time = lookahead_time;
     this->tau = tau;
+    this->kv = kv;
+    this->curvature_gain = curvature_gain;
 
     //Initialize previous output for the first iteration
     this->prevOutput.steering_angle = 0.0f;
@@ -111,6 +113,13 @@ void Pursuit_Algorithm::set_lookahead_time(float lookahead_time){
 void Pursuit_Algorithm::set_tau(float tau){
     this->tau = tau;
 }
+void Pursuit_Algorithm::set_kv(float kv){
+    this->kv = kv;
+}
+void Pursuit_Algorithm::set_curvature_gain(float curvature_gain){
+    this->curvature_gain = curvature_gain;
+}
+
 
 void Pursuit_Algorithm::set_kp(float kp){
     // Not implemented for this algorithm   

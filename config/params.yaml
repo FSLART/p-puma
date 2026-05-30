@@ -1,11 +1,11 @@
 puma_node:
   ros__parameters:
-    sim_mode: true
+    sim_mode: false
     log_info: false
     target_marker_visible: true
     fsl_flag: true
-    fsl_speed: 8.0
-    default_max_speed: 3.0
+    fsl_speed: 3.0
+    default_max_speed: 2.0
     acc_speed: 2.0
     skidpad_speed: 2.0
     ebs_speed: 2.0

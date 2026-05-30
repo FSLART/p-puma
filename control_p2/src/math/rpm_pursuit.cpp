@@ -64,13 +64,15 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     // Calculate desired speed and limit acceleration
     float desired_speed = calculate_desiredSpeed(abs_curvature);
+    float desired_rpm = MS_TO_RPM(desired_speed);
 
-    float speed_diff = desired_speed - current_speed;
+    float prev_rpm = static_cast<float>(this->prevOutput.rpm);
+    float speed_diff = desired_rpm - prev_rpm;
     if (speed_diff > MAX_MS_DELTA) {
-        desired_speed = current_speed + MAX_MS_DELTA;
+        desired_rpm = prev_rpm + MAX_MS_DELTA;
     }
 
-    float desired_rpm = MS_TO_RPM(desired_speed);
+    //float desired_rpm = MS_TO_RPM(desired_speed);
     float desired_rpm_clamped = std::clamp(desired_rpm, 0.0f, (float)MS_TO_RPM(this->missionSpeed));
 
     float steering_angle = 0.0;

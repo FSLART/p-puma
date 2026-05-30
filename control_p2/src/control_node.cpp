@@ -19,15 +19,15 @@ ControlP2::ControlP2() : Node("control_node")
     this->declare_parameter<float>("acc_speed", 2.0f);
     this->declare_parameter<float>("skidpad_speed", 2.0f);
     this->declare_parameter<float>("ebs_speed", 2.0f);
-    this->declare_parameter<float>("fsl_speed", 10.0f);
+    this->declare_parameter<float>("fsl_speed", 3.0f);
 
     //Lookahead tuning
     this->declare_parameter<float>("lookahead_time", 0.5f);
 
     //Algorithm tuning
     this->declare_parameter<float>("tau", 0.01f);
-    this->declare_parameter<float>("kv", 1.0f);
-    this->declare_parameter<float>("curvature_gain", 0.1f);
+    this->declare_parameter<float>("kv", 0.2f);
+    this->declare_parameter<float>("curvature_gain", 2.0f);
     this->declare_parameter<float>("kp", 1.0f);
     this->declare_parameter<float>("ki", 0.1f);
     this->declare_parameter<float>("kd", 0.05f);

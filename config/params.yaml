@@ -1,9 +1,9 @@
 puma_node:
   ros__parameters:
-    sim_mode: false
+    sim_mode: true
     log_info: false
     target_marker_visible: true
-    fsl_flag: true
+    fsl_flag: false
     fsl_speed: 3.0
     default_max_speed: 2.0
     acc_speed: 2.0
@@ -13,6 +13,6 @@ puma_node:
     tau: 0.05
     kv: 0.2
     curvature_gain: 2.0
-    kp: 0.04
-    ki: 0.008
+    kp: 0.7
+    ki: 0.5
     kd: 0.0

@@ -9,7 +9,7 @@ puma_node:
     acc_speed: 2.0
     skidpad_speed: 2.0
     ebs_speed: 2.0
-    lookahead_time: 0.5
+    lookahead_time: 0.3
     tau: 0.05
     kv: 0.2
     curvature_gain: 2.0

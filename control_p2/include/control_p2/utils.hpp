@@ -5,7 +5,7 @@
 /*                              ALGORITHM & MODEL                               */
 /*------------------------------------------------------------------------------*/
 
-#define ALGORITHM  "math/ff_pursuit.hpp"
+#define ALGORITHM  "math/uff_pursuit.hpp"
 #define MODEL "model/dry_model.hpp"
 
 
@@ -52,8 +52,8 @@
 #define PATH_SIZE 40
 
 // LOOKAHEAD PARAMETERS
-#define MAX_LOOKAHEAD 8.5f
-#define MIN_LOOKAHEAD 3.1f
+#define MAX_LOOKAHEAD 8.0f
+#define MIN_LOOKAHEAD 2.0f
 
 #define SPACE_BETWEEN_POINTS 0.50f
 #define MIN_TARGET_INDEX MIN_LOOKAHEAD/SPACE_BETWEEN_POINTS

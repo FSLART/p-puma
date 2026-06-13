@@ -5,7 +5,7 @@ set(library_name p-puma)
 set(lib_srcs
   src/control_node.cpp
   src/control_manager.cpp
-  src/math/uff_pursuit.cpp
+  src/math/pp_profile.cpp
 )
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")

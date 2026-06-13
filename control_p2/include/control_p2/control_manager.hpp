@@ -34,7 +34,7 @@ class ControlManager {
         void log_info();
         void terminate_algorithm();
 
-        float get_lookahead_distance();
+        //float get_lookahead_distance();
 
     private:
         std::unique_ptr<Pursuit_Algorithm> algorithm;

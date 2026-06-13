@@ -246,9 +246,9 @@ void ControlP2::dispatchDynamicsCMD()
         this->control_manager->log_info();
     }
 
-    std_msgs::msg::Float32 lookahead_msg;
-    lookahead_msg.data = this->control_manager->get_lookahead_distance();
-    this->lookahead_publisher->publish(lookahead_msg);
+    // std_msgs::msg::Float32 lookahead_msg;
+    // lookahead_msg.data = this->control_manager->get_lookahead_distance();
+    // this->lookahead_publisher->publish(lookahead_msg);
 }
 
 rcl_interfaces::msg::SetParametersResult ControlP2::parametersCallback(const std::vector<rclcpp::Parameter> &params)

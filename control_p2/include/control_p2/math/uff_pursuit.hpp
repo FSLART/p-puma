@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-
+#include <fstream>
 using namespace std;
 
 class PID_Controller{
@@ -64,6 +64,9 @@ class Pursuit_Algorithm {
         float kv;
         float curvature_gain;
         VehicleModel vehicle = VehicleModel();
+
+        float distance=0.0;
+        float acumTime=0.0;
 
         // PID Controller
         PID_Controller pid_controller;

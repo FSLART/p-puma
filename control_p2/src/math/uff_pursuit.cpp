@@ -63,17 +63,22 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();
     float dt = (currentTime - this->prevTime).seconds();
+
+    //distance
+    distance += dt * current_speed;
+    acumTime += dt;
+
     this->prevTime = currentTime;
 
     // Calculate desired speed and limit acceleration
     float desired_speed = calculate_desiredSpeed(abs_curvature);
 
     //Limit change of desired speed per iteration
-    float max_change = 1.0f; // Max change in speed per iteration
-    float speed_diff = desired_speed - current_speed;
-    if (speed_diff > max_change) {
-        desired_speed = current_speed + max_change;
-    }
+    // float max_change = 1.0f; // Max change in speed per iteration
+    // float speed_diff = desired_speed - current_speed;
+    // if (speed_diff > max_change) {
+    //     desired_speed = current_speed + max_change;
+    // }
 
     // Apply PID controller to define the aceleration
     // float acc_cmd = this->pid_controller.compute(desired_speed, current_speed);
@@ -101,6 +106,17 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     //save previous output
     this->prevOutput = control_output;
+
+
+
+    //Write to csv file
+    std::ofstream log_file;
+    log_file.open("control_log.csv", std::ios_base::app); // append mode
+    log_file << current_speed << "," << desired_speed << "," << control_output.acc_cmd << "," <<control_output.steering_angle << "," << steering_angle << "," << 
+        current_pose.pose.position.x << "," << current_pose.pose.position.y << ","  << path.poses[this->closest_point_index].pose.position.x << "," << 
+        path.poses[this->closest_point_index].pose.position.y << "," << distance << "," << acumTime << "\n";
+    log_file.close();
+
 
     return control_output;
 }
@@ -157,7 +173,7 @@ float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
 
 float Pursuit_Algorithm::preview_abs_curvature(lart_msgs::msg::PathSpline path){
     float sum_curvature = 0.0f;
-    for(int i = 0; i < path.poses.size(); i++){
+    for(size_t i = 0; i < path.poses.size(); i++){
 
         float curvature = std::abs(path.curvature[i]);
         //float curvature = path.curvature[i];
@@ -172,13 +188,14 @@ float Pursuit_Algorithm::calculate_desiredSpeed(float preview_curvature){
         if(preview_curvature < 0.0001f){
             preview_curvature = 0.0001f; // Avoid division by zero
         }
-        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/preview_curvature) * this->kv);
+        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/preview_curvature));
         //RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/preview_curvature));
         velocity = clamp(velocity, 0.0f, this->missionSpeed);
         return velocity;
     }
     return 0.0f;
 }
+
 
 
 

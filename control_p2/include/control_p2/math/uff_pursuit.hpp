@@ -42,9 +42,10 @@ class Pursuit_Algorithm {
         void set_kp(float kp);
         void set_ki(float ki);
         void set_kd(float kd);
+        float calculate_lookahead(float speed);
     private:
         // functions
-        float calculate_lookahead(float speed);
+        
         int fastRound(float x);
         float calculate_desiredSpeed(float preview_curvature);
         float lowPassFilter(float input, float dt);

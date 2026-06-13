@@ -30,6 +30,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     
     //calculate look ahead distance 
     float look_ahead_distance = clamp(calculate_lookahead(current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Lookahead distance: %.2f", look_ahead_distance);
 
     // Define the target point
     this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
@@ -52,11 +53,12 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
     
     //update target point
+    // this->target_point.pose.position.x = final_x - DEFAULT_IMU_TO_REAR_AXLE;
     this->target_point.pose.position.x = final_x;
     this->target_point.pose.position.y = final_y;
 
     //Get the euclidean distance to the target point
-    float distance_to_target = std::sqrt(std::pow(final_x, 2) + std::pow(final_y, 2));
+    float distance_to_target = std::sqrt(std::pow(this->target_point.pose.position.x, 2) + std::pow(this->target_point.pose.position.y, 2));
 
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();
@@ -84,11 +86,13 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     if(abs(this->target_point.pose.position.y) >= 0.01){
 
         // Calculate angle between the closest point and (0,0) (because the point is returned relative to (0,0)) instead of the rear!!
-        float alpha = atan2(this->target_point.pose.position.y, this->target_point.pose.position.x - DEFAULT_IMU_TO_REAR_AXLE);
+        float alpha = atan2(this->target_point.pose.position.y, this->target_point.pose.position.x);
 
         // Calculate steering angle (pure pursuit algorithm)
         steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), distance_to_target);
     }
+
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Steering angle: %.2f, Filtered Steering angle: %.2f", steering_angle, lowPassFilter(steering_angle, dt));
 
     // Apply low pass filter to steering angle
     control_output.steering_angle = clamp(lowPassFilter(steering_angle, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
@@ -153,16 +157,13 @@ float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
 
 float Pursuit_Algorithm::preview_abs_curvature(lart_msgs::msg::PathSpline path){
     float sum_curvature = 0.0f;
-    float sum_weights = 0.0f;
-    for(int i = 0; i < PATH_SIZE; i++){
-        float weight = static_cast<float>(PATH_SIZE - i);
-        sum_weights += weight;
+    for(int i = 0; i < path.poses.size(); i++){
 
         float curvature = std::abs(path.curvature[i]);
         //float curvature = path.curvature[i];
-        sum_curvature += curvature * weight;
+        sum_curvature += curvature;
     }
-    float preview_curvature = sum_curvature / sum_weights;
+    float preview_curvature = sum_curvature / path.poses.size();
     return preview_curvature;
 }
 
@@ -178,6 +179,7 @@ float Pursuit_Algorithm::calculate_desiredSpeed(float preview_curvature){
     }
     return 0.0f;
 }
+
 
 
 geometry_msgs::msg::PoseStamped Pursuit_Algorithm::get_target_point()

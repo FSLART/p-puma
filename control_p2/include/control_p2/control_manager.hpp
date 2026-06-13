@@ -34,6 +34,8 @@ class ControlManager {
         void log_info();
         void terminate_algorithm();
 
+        float get_lookahead_distance();
+
     private:
         std::unique_ptr<Pursuit_Algorithm> algorithm;
     protected:
@@ -43,6 +45,7 @@ class ControlManager {
         float missionSpeed;
         geometry_msgs::msg::PoseStamped currentPose;
         lart_msgs::msg::PathSpline currentPath;
+        float lookahead;
     
 };
 

@@ -62,6 +62,7 @@ ControlP2::ControlP2() : Node("control_node")
 
     marker_publisher = this->create_publisher<visualization_msgs::msg::Marker>(TOPIC_TARGET_MARKER, 10);
 
+    lookahead_publisher = this->create_publisher<std_msgs::msg::Float32>("lookahead_distance", 10);
 
     /*------------------------------------------------------------------------------*/
     /*                                PUBLISHERS TIMER                              */
@@ -244,6 +245,10 @@ void ControlP2::dispatchDynamicsCMD()
     if(log_info){
         this->control_manager->log_info();
     }
+
+    std_msgs::msg::Float32 lookahead_msg;
+    lookahead_msg.data = this->control_manager->get_lookahead_distance();
+    this->lookahead_publisher->publish(lookahead_msg);
 }
 
 rcl_interfaces::msg::SetParametersResult ControlP2::parametersCallback(const std::vector<rclcpp::Parameter> &params)

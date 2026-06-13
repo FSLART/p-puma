@@ -16,6 +16,8 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
 
     lart_msgs::msg::DynamicsCMD controlOutput = lart_msgs::msg::DynamicsCMD();
 
+    this->lookahead = clamp(this->algorithm->calculate_lookahead(this->currentSpeed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
+
     controlOutput = algorithm->calculate_control(this->currentPath, 
         this->currentPose, this->currentSpeed, this->currentSteering);
     
@@ -168,4 +170,8 @@ float ControlManager::get_currentSpeed(){
 
 float ControlManager::get_currentSteering(){
     return this->currentSteering;
+}
+
+float ControlManager::get_lookahead_distance(){
+    return this->lookahead;
 }

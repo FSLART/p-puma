@@ -29,7 +29,8 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     //calculate look ahead distance 
     float abs_curvature = preview_abs_curvature(path);
     float look_ahead_distance = clamp(calculate_lookahead(abs_curvature, current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
-
+    
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Lookahead: %f", look_ahead_distance);
     // Define the target point
     this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
 
@@ -139,6 +140,7 @@ int Pursuit_Algorithm::fastRound(float x) {
 float Pursuit_Algorithm::calculate_lookahead(float preview_curvature, float speed){
     // Lookahead distance increases with speed and decreases with curvature
     float look_ahead_distance = (MIN_LOOKAHEAD + this->lookahead_time * speed)/(1.0f + this->curvature_gain * preview_curvature); 
+    //float look_ahead_distance = this->lookahead_time * speed;
     return look_ahead_distance;
 }
 

@@ -76,7 +76,6 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     if (speed_diff > MAX_RPM_DELTA) {
         desired_rpm = prev_rpm + MAX_RPM_DELTA;
     }
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "DESIRED: %.2f",desired_rpm);
 
     //float desired_rpm = MS_TO_RPM(desired_speed);
     float desired_rpm_clamped = std::clamp(desired_rpm, 0.0f, (float)MS_TO_RPM(this->missionSpeed));

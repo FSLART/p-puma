@@ -32,13 +32,13 @@
 /*                                   TOPICS                                     */
 /*------------------------------------------------------------------------------*/
 
-#define TOPIC_PATH_OLD "/planned_path_topic"
-#define TOPIC_DYNAMICS_OLD "/acu_origin/dynamics"
-#define TOPIC_DYNAMICS_CMD "pc_origin/dynamics"
-#define TOPIC_STATE_OLD "/pc_origin/system_status/critical_as/state"
-#define TOPIC_MISSION_OLD "/pc_origin/system_status/critical_as/mission"
-#define TOPIC_SLAM_OLD "/slam/pose"
-#define TOPIC_SLAM_STATS_OLD "/slam/stats"
+// #define TOPIC_PATH_OLD "/planned_path_topic"
+// #define TOPIC_DYNAMICS_OLD "/acu_origin/dynamics"
+// #define TOPIC_DYNAMICS_CMD "pc_origin/dynamics"
+// #define TOPIC_STATE_OLD "/pc_origin/system_status/critical_as/state"
+// #define TOPIC_MISSION_OLD "/pc_origin/system_status/critical_as/mission"
+// #define TOPIC_SLAM_OLD "/slam/pose"
+// #define TOPIC_SLAM_STATS_OLD "/slam/stats"
 //#define TOPIC_TARGET_MARKER "/target_marker_topic"
 
 /*------------------------------------------------------------------------------*/

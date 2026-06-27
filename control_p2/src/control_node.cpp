@@ -84,22 +84,22 @@ ControlP2::ControlP2() : Node("control_node")
     /*------------------------------------------------------------------------------*/
 
     path_subscriber = this->create_subscription<lart_msgs::msg::PathSpline>(
-        TOPIC_PATH_OLD, 10, std::bind(&ControlP2::path_callback, this, _1));
+        TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));
 
     dynamics_subscriber = this->create_subscription<lart_msgs::msg::Dynamics>(
-        TOPIC_DYNAMICS_OLD, 10, std::bind(&ControlP2::dynamics_callback, this, _1));
+        TOPIC_CONTROL_FEEDBACK, 10, std::bind(&ControlP2::dynamics_callback, this, _1));
 
     state_subscriber = this->create_subscription<lart_msgs::msg::State>(
-        TOPIC_STATE_OLD, 10, std::bind(&ControlP2::state_callback, this, _1));
+        TOPIC_STATE_PC, 10, std::bind(&ControlP2::state_callback, this, _1));
 
     mission_subscriber = this->create_subscription<lart_msgs::msg::Mission>(
-        TOPIC_MISSION_OLD, 10, std::bind(&ControlP2::mission_callback, this, _1));
+        TOPIC_MISSION_PC, 10, std::bind(&ControlP2::mission_callback, this, _1));
 
     position_subscriber = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-        TOPIC_SLAM_OLD, 10, std::bind(&ControlP2::pose_callback, this, _1));
+        TOPIC_SLAM_POSE, 10, std::bind(&ControlP2::pose_callback, this, _1));
     
     lap_subscriber = this->create_subscription<lart_msgs::msg::SlamStats>(
-        TOPIC_SLAM_STATS_OLD, 10, std::bind(&ControlP2::lap_callback, this, _1));
+        TOPIC_STATS, 10, std::bind(&ControlP2::lap_callback, this, _1));
 
     /*------------------------------------------------------------------------------*/
     /*                                UPDATE PARAMS                                 */    

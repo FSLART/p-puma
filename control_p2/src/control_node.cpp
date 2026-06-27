@@ -13,6 +13,7 @@ ControlP2::ControlP2() : Node("control_node")
     this->declare_parameter<bool>("log_info", false);
     this->declare_parameter<bool>("target_marker_visible", true);
     this->declare_parameter<bool>("fsl_flag", false);
+    this->declare_parameter<bool>("acc_mode", false);
 
     //Mission speeds
     this->declare_parameter<float>("default_max_speed", 2.0f);
@@ -36,6 +37,7 @@ ControlP2::ControlP2() : Node("control_node")
     this->get_parameter("log_info", log_info);
     this->get_parameter("target_marker_visible", target_marker_visible);
     this->get_parameter("fsl_flag", fsl_flag);
+    this->get_parameter("acc_mode", acc_mode);
     
     this->get_parameter("default_max_speed",default_max_speed);
     this->get_parameter("acc_speed",acc_speed);
@@ -58,7 +60,9 @@ ControlP2::ControlP2() : Node("control_node")
     /*                                   PUBLISHERS                                 */
     /*------------------------------------------------------------------------------*/
     
-    dynamics_publisher = this->create_publisher<lart_msgs::msg::DynamicsCMD>(TOPIC_DYNAMICS_CMD, 10);
+    dynamics_torque_publisher = this->create_publisher<lart_msgs::msg::DynamicsCMD>(TOPIC_CONTROL_TORQUE_TARGET, 10);
+
+    dynamics_rpm_publisher = this->create_publisher<lart_msgs::msg::DynamicsCMD>(TOPIC_CONTROL_RPM_TARGET, 10);
 
     marker_publisher = this->create_publisher<visualization_msgs::msg::Marker>(TOPIC_TARGET_MARKER, 10);
 
@@ -80,22 +84,22 @@ ControlP2::ControlP2() : Node("control_node")
     /*------------------------------------------------------------------------------*/
 
     path_subscriber = this->create_subscription<lart_msgs::msg::PathSpline>(
-        TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));
+        TOPIC_PATH_OLD, 10, std::bind(&ControlP2::path_callback, this, _1));
 
     dynamics_subscriber = this->create_subscription<lart_msgs::msg::Dynamics>(
-        TOPIC_DYNAMICS, 10, std::bind(&ControlP2::dynamics_callback, this, _1));
+        TOPIC_DYNAMICS_OLD, 10, std::bind(&ControlP2::dynamics_callback, this, _1));
 
     state_subscriber = this->create_subscription<lart_msgs::msg::State>(
-        TOPIC_STATE, 10, std::bind(&ControlP2::state_callback, this, _1));
+        TOPIC_STATE_OLD, 10, std::bind(&ControlP2::state_callback, this, _1));
 
     mission_subscriber = this->create_subscription<lart_msgs::msg::Mission>(
-        TOPIC_MISSION, 10, std::bind(&ControlP2::mission_callback, this, _1));
+        TOPIC_MISSION_OLD, 10, std::bind(&ControlP2::mission_callback, this, _1));
 
     position_subscriber = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-        TOPIC_SLAM, 10, std::bind(&ControlP2::pose_callback, this, _1));
+        TOPIC_SLAM_OLD, 10, std::bind(&ControlP2::pose_callback, this, _1));
     
     lap_subscriber = this->create_subscription<lart_msgs::msg::SlamStats>(
-        TOPIC_SLAM_STATS, 10, std::bind(&ControlP2::lap_callback, this, _1));
+        TOPIC_SLAM_STATS_OLD, 10, std::bind(&ControlP2::lap_callback, this, _1));
 
     /*------------------------------------------------------------------------------*/
     /*                                UPDATE PARAMS                                 */    
@@ -220,7 +224,7 @@ void ControlP2::dispatchDynamicsCMD()
 
     // Check if we have received a path
     if(this->control_manager->get_currentPath().poses.empty()){
-        //RCLCPP_WARN(this->get_logger(), "No path received yet");
+        RCLCPP_WARN(this->get_logger(), "No path received yet");
         return;
     }
 
@@ -231,9 +235,16 @@ void ControlP2::dispatchDynamicsCMD()
         control_output.acc_cmd = 0.0;
     }
 
-    // publish dynamics command
-    this->dynamics_publisher->publish(control_output);
-    RCLCPP_INFO(this->get_logger(), "Published DynamicsCMD: rpm: %d, steering_angle: %f, acc_cmd: %f", control_output.rpm, control_output.steering_angle, control_output.acc_cmd);
+    //Send dynamics in rpm or acceleration
+    if(this->acc_mode){
+        dynamics_torque_publisher->publish(control_output);
+    }else{
+        dynamics_rpm_publisher->publish(control_output);
+    }
+
+    // // publish dynamics command
+    // this->dynamics_publisher->publish(control_output);
+    //RCLCPP_INFO(this->get_logger(), "Published DynamicsCMD: rpm: %d, steering_angle: %f, acc_cmd: %f", control_output.rpm, control_output.steering_angle, control_output.acc_cmd);
 
     // publish target marker
     if(target_marker_visible){
@@ -372,7 +383,12 @@ void ControlP2::cleanUp()
     cleanUpMailBox.acc_cmd = 0.0;
     cleanUpMailBox.header.stamp = rclcpp::Clock().now();
 
-    this->dynamics_publisher->publish(cleanUpMailBox);
+    
+    if(this->acc_mode){
+        dynamics_torque_publisher->publish(cleanUpMailBox);
+    }else{
+        dynamics_rpm_publisher->publish(cleanUpMailBox);
+    }
 
 }
 

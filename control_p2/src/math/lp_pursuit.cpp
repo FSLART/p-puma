@@ -120,7 +120,6 @@ void Pursuit_Algorithm::set_curvature_gain(float curvature_gain){
     this->curvature_gain = curvature_gain;
 }
 
-
 void Pursuit_Algorithm::set_kp(float kp){
     // Not implemented for this algorithm   
 }

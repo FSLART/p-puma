@@ -57,6 +57,9 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     this->target_point.pose.position.x = final_x;
     this->target_point.pose.position.y = final_y;
 
+    //Get the euclidean distance to the target point
+    float distance_to_target = std::sqrt(std::pow(this->target_point.pose.position.x, 2) + std::pow(this->target_point.pose.position.y, 2));
+
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();
     float dt = (currentTime - this->prevTime).seconds();
@@ -66,11 +69,14 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float desired_speed = calculate_desiredSpeed(abs_curvature);
     float desired_rpm = MS_TO_RPM(desired_speed);
 
+    
+
     float prev_rpm = static_cast<float>(this->prevOutput.rpm);
     float speed_diff = desired_rpm - prev_rpm;
-    if (speed_diff > MAX_MS_DELTA) {
-        desired_rpm = prev_rpm + MAX_MS_DELTA;
+    if (speed_diff > MAX_RPM_DELTA) {
+        desired_rpm = prev_rpm + MAX_RPM_DELTA;
     }
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "DESIRED: %.2f",desired_rpm);
 
     //float desired_rpm = MS_TO_RPM(desired_speed);
     float desired_rpm_clamped = std::clamp(desired_rpm, 0.0f, (float)MS_TO_RPM(this->missionSpeed));
@@ -80,10 +86,10 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     if(abs(this->target_point.pose.position.y) >= 0.01){
 
         // Calculate angle between the closest point and (0,0) (because the point is returned relative to (0,0)) instead of the rear!!
-        float alpha = atan2(this->target_point.pose.position.y, this->target_point.pose.position.x - DEFAULT_IMU_TO_REAR_AXLE);
+        float alpha = atan2(this->target_point.pose.position.y, this->target_point.pose.position.x);
 
         // Calculate steering angle (pure pursuit algorithm)
-        steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), look_ahead_distance);
+        steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), distance_to_target);
     }
 
     // Apply low pass filter to steering angle

@@ -32,7 +32,8 @@ public:
 
 private:
 
-    rclcpp::Publisher<lart_msgs::msg::DynamicsCMD>::SharedPtr dynamics_publisher;
+    rclcpp::Publisher<lart_msgs::msg::DynamicsCMD>::SharedPtr dynamics_rpm_publisher;
+    rclcpp::Publisher<lart_msgs::msg::DynamicsCMD>::SharedPtr dynamics_torque_publisher;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_publisher;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr lookahead_publisher;
 
@@ -55,6 +56,7 @@ protected:
     bool log_info;
     bool target_marker_visible;
     bool fsl_flag;
+    bool acc_mode;
     float fsl_speed;
     float default_max_speed;
     float acc_speed;

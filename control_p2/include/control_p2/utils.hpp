@@ -5,7 +5,7 @@
 /*                              ALGORITHM & MODEL                               */
 /*------------------------------------------------------------------------------*/
 
-#define ALGORITHM  "math/acc_pursuit.hpp"
+#define ALGORITHM  "math/rpm_pursuit.hpp"
 #define MODEL "model/dry_model.hpp"
 
 
@@ -23,6 +23,7 @@
 
 // Common values
 #include "lart_common.h"
+#include "topics.h"
 
 // Vehicle Config
 #include MODEL
@@ -31,14 +32,14 @@
 /*                                   TOPICS                                     */
 /*------------------------------------------------------------------------------*/
 
-#define TOPIC_PATH "/planned_path_topic"
-#define TOPIC_DYNAMICS "/acu_origin/dynamics"
+#define TOPIC_PATH_OLD "/planned_path_topic"
+#define TOPIC_DYNAMICS_OLD "/acu_origin/dynamics"
 #define TOPIC_DYNAMICS_CMD "pc_origin/dynamics"
-#define TOPIC_STATE "/pc_origin/system_status/critical_as/state"
-#define TOPIC_MISSION "/pc_origin/system_status/critical_as/mission"
-#define TOPIC_SLAM "/slam/pose"
-#define TOPIC_SLAM_STATS "/slam/stats"
-#define TOPIC_TARGET_MARKER "/target_marker_topic"
+#define TOPIC_STATE_OLD "/pc_origin/system_status/critical_as/state"
+#define TOPIC_MISSION_OLD "/pc_origin/system_status/critical_as/mission"
+#define TOPIC_SLAM_OLD "/slam/pose"
+#define TOPIC_SLAM_STATS_OLD "/slam/stats"
+//#define TOPIC_TARGET_MARKER "/target_marker_topic"
 
 /*------------------------------------------------------------------------------*/
 /*                                  CONSTANTS                                   */

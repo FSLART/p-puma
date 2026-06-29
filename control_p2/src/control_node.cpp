@@ -53,8 +53,8 @@ ControlP2::ControlP2() : Node("control_node")
     this->get_parameter("kd", kd);
 
 
-    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, fsl_flag: %d, fsl_speed: %.2f, default_max_speed: %.2f, acc_speed: %.2f, skidpad_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kv: %.2f, curvature_gain: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
-        sim_mode, log_info, target_marker_visible, fsl_flag, fsl_speed, default_max_speed, acc_speed, skidpad_speed, ebs_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
+    RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, fsl_flag: %d, acc_flag: %d, fsl_speed: %.2f, default_max_speed: %.2f, acc_speed: %.2f, skidpad_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kv: %.2f, curvature_gain: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
+        sim_mode, log_info, target_marker_visible, fsl_flag, acc_mode, fsl_speed, default_max_speed, acc_speed, skidpad_speed, ebs_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
 
     /*------------------------------------------------------------------------------*/
     /*                                   PUBLISHERS                                 */
@@ -244,7 +244,7 @@ void ControlP2::dispatchDynamicsCMD()
 
     // // publish dynamics command
     // this->dynamics_publisher->publish(control_output);
-    //RCLCPP_INFO(this->get_logger(), "Published DynamicsCMD: rpm: %d, steering_angle: %f, acc_cmd: %f", control_output.rpm, control_output.steering_angle, control_output.acc_cmd);
+    RCLCPP_INFO(this->get_logger(), "Published DynamicsCMD: rpm: %d, steering_angle: %f, acc_cmd: %f", control_output.rpm, control_output.steering_angle, control_output.acc_cmd);
 
     // publish target marker
     if(target_marker_visible){

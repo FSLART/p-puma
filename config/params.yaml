@@ -4,7 +4,7 @@ puma_node:
     log_info: false
     target_marker_visible: true
     fsl_flag: false
-    acc_mode: true
+    acc_mode: false
     fsl_speed: 3.0
     default_max_speed: 4.0
     acc_speed: 2.0

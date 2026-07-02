@@ -1,4 +1,4 @@
-#include "control_p2/math/rpm_pursuit.hpp"
+#include "control_p2/math/srpm_pursuit.hpp"
 #include <algorithm>
 
 
@@ -12,9 +12,6 @@ Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, f
     //Initialize previous output for the first iteration
     this->prevOutput.steering_angle = 0.0f;
     this->prevOutput.rpm = 0;
- 
-    //Intialize previous time
-    this->prevTime = rclcpp::Clock().now();
 
     (void)kp; // Unused for this algorithm
     (void)ki; // Unused for this algorithm
@@ -58,11 +55,6 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     //Get the euclidean distance to the target point
     float distance_to_target = std::sqrt(std::pow(this->target_point.pose.position.x, 2) + std::pow(this->target_point.pose.position.y, 2));
-
-    // Get the dt since last call
-    rclcpp::Time currentTime = rclcpp::Clock().now();
-    float dt = (currentTime - this->prevTime).seconds();
-    this->prevTime = currentTime;
 
     // Calculate desired speed and limit acceleration
     float abs_curvature = preview_abs_curvature(path);

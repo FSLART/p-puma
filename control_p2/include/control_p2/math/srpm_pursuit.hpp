@@ -52,8 +52,7 @@ class Pursuit_Algorithm {
         
         // Parameters
         lart_msgs::msg::DynamicsCMD prevOutput;
-        rclcpp::Time prevTime;
-
+        
         int closest_point_index = -1;
         geometry_msgs::msg::PoseStamped target_point;
         float missionSpeed;

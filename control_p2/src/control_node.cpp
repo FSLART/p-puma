@@ -83,8 +83,13 @@ ControlP2::ControlP2() : Node("control_node")
     /*                                  SUBSCRIBERS                                 */
     /*------------------------------------------------------------------------------*/
 
+    // path_subscriber = this->create_subscription<lart_msgs::msg::PathSpline>(
+    //     TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));  
+
+    /// REMOVERRRRRRRRRRRRRRR
     path_subscriber = this->create_subscription<lart_msgs::msg::PathSpline>(
-        TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));
+        "/planned_path_topic", 10, std::bind(&ControlP2::path_callback, this, _1));
+
 
     dynamics_subscriber = this->create_subscription<lart_msgs::msg::Dynamics>(
         TOPIC_CONTROL_FEEDBACK, 10, std::bind(&ControlP2::dynamics_callback, this, _1));
@@ -242,7 +247,7 @@ void ControlP2::dispatchDynamicsCMD()
         dynamics_rpm_publisher->publish(control_output);
     }
 
-    // // publish dynamics command
+    // publish dynamics command
     // this->dynamics_publisher->publish(control_output);
     RCLCPP_INFO(this->get_logger(), "Published DynamicsCMD: rpm: %d, steering_angle: %f, acc_cmd: %f", control_output.rpm, control_output.steering_angle, control_output.acc_cmd);
 

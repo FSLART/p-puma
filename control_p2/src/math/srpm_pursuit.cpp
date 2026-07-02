@@ -61,8 +61,6 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     float desired_speed = calculate_desiredSpeed(abs_curvature);
     float desired_rpm = MS_TO_RPM(desired_speed);
 
-    
-
     float prev_rpm = static_cast<float>(this->prevOutput.rpm);
     float speed_diff = desired_rpm - prev_rpm;
     if (speed_diff > MAX_RPM_DELTA) {
@@ -132,12 +130,15 @@ int Pursuit_Algorithm::fastRound(float x) {
 
 float Pursuit_Algorithm::preview_abs_curvature(lart_msgs::msg::PathSpline path){
     float sum_curvature = 0.0f;
-    for(int i = 0; i < PATH_SIZE; i++){
+    for(size_t i = 0; i < path.poses.size(); i++){
         float curvature = std::abs(path.curvature[i]);
         //float curvature = path.curvature[i];
         sum_curvature += curvature;
     }
-    float preview_curvature = sum_curvature / PATH_SIZE;
+    float preview_curvature = sum_curvature / path.poses.size();
+
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"),"Tamanho do path: %ld, Curvature: %f", path.poses.size(), preview_curvature);
+
     return preview_curvature;
 }
 

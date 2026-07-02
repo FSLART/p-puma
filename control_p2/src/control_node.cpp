@@ -86,6 +86,7 @@ ControlP2::ControlP2() : Node("control_node")
     // path_subscriber = this->create_subscription<lart_msgs::msg::PathSpline>(
     //     TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));  
 
+    
     /// REMOVERRRRRRRRRRRRRRR
     path_subscriber = this->create_subscription<lart_msgs::msg::PathSpline>(
         "/planned_path_topic", 10, std::bind(&ControlP2::path_callback, this, _1));

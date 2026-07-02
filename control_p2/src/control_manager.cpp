@@ -26,6 +26,9 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
     // controlOutput.acc_cmd = std::clamp(controlOutput.acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
     // controlOutput.steering_angle = std::clamp(controlOutput.steering_angle, (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
     
+    // inverted value for cubemars
+    controlOutput.steering_angle = -controlOutput.steering_angle;
+    
     // Add timestamp
     controlOutput.header.stamp = rclcpp::Clock().now();
 

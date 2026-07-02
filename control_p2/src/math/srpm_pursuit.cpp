@@ -67,7 +67,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
         desired_rpm = prev_rpm + MAX_RPM_DELTA;
     }
 
-    //float desired_rpm = MS_TO_RPM(desired_speed);
+    //float desired_rpm = MS_TO_RPM(desired_speed); ISTO ESTA REDUNDANTE!
     float desired_rpm_clamped = std::clamp(desired_rpm, 0.0f, (float)MS_TO_RPM(this->missionSpeed));
 
     float steering_angle = 0.0;
@@ -152,7 +152,11 @@ float Pursuit_Algorithm::calculate_desiredSpeed(float preview_curvature){
         if(preview_curvature < 0.0001f){
             preview_curvature = 0.0001f; // Avoid division by zero
         }
-        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/preview_curvature));
+        //float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/preview_curvature));
+
+        //HARDCODED VALUE FOR GRIP COEF
+        float velocity = std::sqrt(0.8 * LART_GRAVITY * (1.0f/preview_curvature));
+
         velocity = clamp(velocity, 0.0f, this->missionSpeed);
         return velocity;
     }

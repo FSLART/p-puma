@@ -210,7 +210,7 @@ void ControlP2::pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr m
 {
     // save current position from slam
     //geometry_msgs::msg::PoseStamped pose;
-    this->control_manager->set_pose(*msg); //*msg
+    //this->control_manager->set_pose(*msg); 
 }
 
 void ControlP2::dispatchDynamicsCMD()

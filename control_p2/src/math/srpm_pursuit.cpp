@@ -54,7 +54,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     this->target_point.pose.position.y = final_y;
 
     //Get the euclidean distance to the target point
-    float distance_to_target = std::sqrt(std::pow(this->target_point.pose.position.x, 2) + std::pow(this->target_point.pose.position.y, 2));
+    float distance_to_target = std::sqrt(std::pow(this->target_point.pose.position.x-1.15, 2) + std::pow(this->target_point.pose.position.y, 2));
 
     // Calculate desired speed and limit acceleration
     float abs_curvature = preview_abs_curvature(path);
@@ -75,7 +75,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     if(abs(this->target_point.pose.position.y) >= 0.01){
 
         // Calculate angle between the closest point and (0,0) (because the point is returned relative to (0,0)) instead of the rear!!
-        float alpha = atan2(this->target_point.pose.position.y, this->target_point.pose.position.x);
+        float alpha = atan2(this->target_point.pose.position.y, this->target_point.pose.position.x - 1.15);
 
         // Calculate steering angle (pure pursuit algorithm)
         steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), distance_to_target);

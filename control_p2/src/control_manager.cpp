@@ -21,11 +21,19 @@ lart_msgs::msg::DynamicsCMD ControlManager::getDynamicsCMD(){
     controlOutput = algorithm->calculate_control(this->currentPath, 
         this->currentPose, this->currentSpeed, this->currentSteering);
     
-    // Ensure that the control output does not exceed limits
-    // controlOutput.rpm = std::clamp(controlOutput.rpm, 0.0f, (float)MS_TO_RPM(this->missionSpeed));
-    // controlOutput.acc_cmd = std::clamp(controlOutput.acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
-    // controlOutput.steering_angle = std::clamp(controlOutput.steering_angle, (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
-    
+    if(this->race_finished){
+        if(this->distance_after_finish > 2.0){
+            controlOutput.rpm = 0;
+            controlOutput.acc_cmd = -1.0;
+        }else{
+            auto dt = (rclcpp::Clock().now() - this->finish_time).seconds();
+            this->finish_time = rclcpp::Clock().now();
+
+            this->distance_after_finish += controlOutput.target_ms * dt;
+        }
+
+    }
+
     // inverted value for cubemars
     controlOutput.steering_angle = -controlOutput.steering_angle;
     
@@ -86,6 +94,11 @@ void ControlManager::log_info(){
 
 void ControlManager::terminate_algorithm(){
     this->algorithm.reset(); 
+}
+
+void ControlManager::finish_sequence(){
+    this->finish_time = rclcpp::Clock().now();
+    this->race_finished = true; 
 }
 
 void ControlManager::set_path(lart_msgs::msg::PathSpline path){

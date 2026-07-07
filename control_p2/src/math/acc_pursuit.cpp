@@ -66,6 +66,8 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // Calculate desired speed and limit acceleration
     float desired_speed = calculate_desiredSpeed(abs_curvature);
 
+    control_output.target_ms = desired_speed;
+
     //Limit change of desired speed per iteration
     float max_change = 1.0f; // Max change in speed per iteration
     float speed_diff = desired_speed - current_speed;

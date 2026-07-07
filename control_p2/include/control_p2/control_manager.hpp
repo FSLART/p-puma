@@ -33,6 +33,7 @@ class ControlManager {
         visualization_msgs::msg::Marker get_target_marker();
         void log_info();
         void terminate_algorithm();
+        void finish_sequence();
 
         //float get_lookahead_distance();
 
@@ -46,7 +47,9 @@ class ControlManager {
         geometry_msgs::msg::PoseStamped currentPose;
         lart_msgs::msg::PathSpline currentPath;
         float lookahead;
-    
+        bool race_finished = false;
+        float distance_after_finish = 0.0f;
+        rclcpp::Time finish_time;
 };
 
 #endif

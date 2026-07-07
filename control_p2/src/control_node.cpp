@@ -139,7 +139,8 @@ void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
         break;
 
     case lart_msgs::msg::State::FINISH:
-        this->race_finished = true;
+        //this->race_finished = true;
+        this->control_manager->finish_sequence();
         break;
 
     case lart_msgs::msg::State::EMERGENCY:
@@ -210,7 +211,7 @@ void ControlP2::pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr m
 {
     // save current position from slam
     //geometry_msgs::msg::PoseStamped pose;
-    //this->control_manager->set_pose(*msg); 
+    this->control_manager->set_pose(*msg); 
 }
 
 void ControlP2::dispatchDynamicsCMD()
@@ -230,10 +231,10 @@ void ControlP2::dispatchDynamicsCMD()
 
     lart_msgs::msg::DynamicsCMD control_output = this->control_manager->getDynamicsCMD();
 
-    if(this->race_finished){
-        control_output.rpm = 0;
-        control_output.acc_cmd = 0.0;
-    }
+    // if(this->race_finished){
+    //     control_output.rpm = 0;
+    //     control_output.acc_cmd = -1.0;
+    // }
 
     //Send dynamics in rpm or acceleration
     if(this->acc_mode){

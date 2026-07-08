@@ -119,17 +119,18 @@ ros2 run p-puma control_p2
 #### Subscriptions (Inputs)
 | Topic | Message Type | Description |
 |-------|--------------|-------------|
-| `/lart/state` | `lart_msgs/State` | Current vehicle state |
-| `/lart/mission` | `lart_msgs/Mission` | Mission configuration |
-| `/lart/path` | `lart_msgs/PathSpline` | Path to follow |
-| `/lart/dynamics` | `lart_msgs/Dynamics` | Vehicle dynamics parameters |
-| `/pose` | `geometry_msgs/PoseStamped` | Current vehicle pose |
+| `/state` | `lart_msgs/State` | Current vehicle state |
+| `/mission` | `lart_msgs/Mission` | Mission configuration |
+| `/path` | `lart_msgs/PathSpline` | Path to follow |
+| `/control/feedback` | `lart_msgs/Dynamics` | Vehicle dynamics parameters |
+| `/slam/pose` | `geometry_msgs/PoseStamped` | Current vehicle pose |
 
 #### Publications (Outputs)
 | Topic | Message Type | Description |
 |-------|--------------|-------------|
-| `/lart/dynamics_cmd` | `lart_msgs/DynamicsCMD` | Control commands (speed, steering) |
-| `/visualization_marker` | `visualization_msgs/Marker` | Visualization of target point |
+| `/control/rpm_target` | `lart_msgs/DynamicsCMD` | Control commands (steering, rpm) |
+| `/control/torque_target` | `lart_msgs/DynamicsCMD` | Control commands (steering, acceleration comand) |
+| `/control/target/marker` | `visualization_msgs/Marker` | Visualization of target point |
 
 ## Configuration
 

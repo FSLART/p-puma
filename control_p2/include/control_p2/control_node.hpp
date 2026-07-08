@@ -76,6 +76,8 @@ protected:
     uint8_t current_mission;
     std::optional<std::chrono::steady_clock::time_point> drivingSignalTimeStamp;
     rclcpp::TimerBase::SharedPtr control_timer;
+    float distance_after_finish = 0.0f;
+    rclcpp::Time finish_time;
 
     // flags
     bool race_finished = false;

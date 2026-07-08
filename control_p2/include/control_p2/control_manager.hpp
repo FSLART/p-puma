@@ -47,9 +47,6 @@ class ControlManager {
         geometry_msgs::msg::PoseStamped currentPose;
         lart_msgs::msg::PathSpline currentPath;
         float lookahead;
-        bool race_finished = false;
-        float distance_after_finish = 0.0f;
-        rclcpp::Time finish_time;
 };
 
 #endif

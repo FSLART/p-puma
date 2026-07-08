@@ -139,8 +139,10 @@ void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
         break;
 
     case lart_msgs::msg::State::FINISH:
-        //this->race_finished = true;
-        this->control_manager->finish_sequence();
+        if(!this->race_finished){
+            this->finish_time = rclcpp::Clock().now();
+            this->race_finished = true;
+        }
         break;
 
     case lart_msgs::msg::State::EMERGENCY:
@@ -231,10 +233,25 @@ void ControlP2::dispatchDynamicsCMD()
 
     lart_msgs::msg::DynamicsCMD control_output = this->control_manager->getDynamicsCMD();
 
-    // if(this->race_finished){
-    //     control_output.rpm = 0;
-    //     control_output.acc_cmd = -1.0;
-    // }
+    //Finish logic
+    if(this->race_finished){
+        if(this->distance_after_finish > 2.0){
+            control_output.rpm = 0;
+            control_output.acc_cmd = -1.0;
+
+            //if the car is almost stopped, no more need extreme braking
+            if(this->control_manager->get_currentSpeed() < 0.1){
+                control_output.acc_cmd = 0.0;
+            }
+
+        }else{
+            auto dt = (rclcpp::Clock().now() - this->finish_time).seconds();
+            this->finish_time = rclcpp::Clock().now();
+
+            //this->distance_after_finish += controlOutput.target_ms * dt;
+            this->distance_after_finish += this->control_manager->get_currentSpeed() * dt;
+        }
+    }
 
     //Send dynamics in rpm or acceleration
     if(this->acc_mode){

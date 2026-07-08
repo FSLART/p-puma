@@ -398,7 +398,7 @@ void ControlP2::cleanUp()
     lart_msgs::msg::DynamicsCMD cleanUpMailBox = lart_msgs::msg::DynamicsCMD();
     cleanUpMailBox.rpm = 0;
     cleanUpMailBox.steering_angle = 0.0;
-    cleanUpMailBox.acc_cmd = 0.0;
+    cleanUpMailBox.acc_cmd = -1.0;
     cleanUpMailBox.header.stamp = rclcpp::Clock().now();
 
     

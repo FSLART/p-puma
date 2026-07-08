@@ -213,9 +213,3 @@ colcon test --packages-select p-puma
 ## Acknowledgments
 
 - Built for LART (Leiria Academic Racing Team)
-
----
-
-**Last Updated**: March 2024  
-**ROS 2 Version**: Humble (or newer)  
-**Build Status**: [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()

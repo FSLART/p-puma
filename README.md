@@ -18,7 +18,7 @@ The **P-PUMA** control system is designed to guide autonomous vehicles along pre
   - **RPM Pursuit**: Curvature-preview pursuit with RPM-oriented speed control
   - **SRPM Pursuit**: Simplified/smoothed variant of RPM Pursuit
   - **Stanley (test)**: Experimental Stanley controller using heading and cross-track error
-  - **PP Profile**: Pure Pursuit lateral control combined with a planned longitudinal velocity profile (feedforward + feedback) — currently work in progress, pending a `velocity[]` field on `PathSpline`
+  - **PP Profile**: Pure Pursuit lateral control combined with a planned longitudinal velocity profile (feedforward + feedback) — currently work in progress
 
 - **Vehicle Dynamics Models**
   - Dry surface dynamics

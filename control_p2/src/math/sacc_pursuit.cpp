@@ -1,4 +1,4 @@
-#include "control_p2/math/ff_pursuit.hpp"
+#include "control_p2/math/sacc_pursuit.hpp"
 
 Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd) {
     this->missionSpeed = missionSpeed;
@@ -6,7 +6,7 @@ Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, f
     this->tau = tau;
     this->kv = kv;
     this->curvature_gain = curvature_gain;
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), " curvature_gain: %.2f", curvature_gain);
+    
     //Initialize previous output for the first iteration
     this->prevOutput.steering_angle = 0.0f;
     this->prevOutput.acc_cmd = 0.0f;
@@ -23,22 +23,17 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     //Ignore unused parameters
     (void)current_steering;
     
-    //Get Curvature preview
-    float curvature = preview_curvature(path);
-    float abs_curvature = preview_abs_curvature(path);
-
     //Declare variable to return
     lart_msgs::msg::DynamicsCMD control_output;
-
-    // Calculate look ahead point based on the speed with a min and max distances
-    float look_ahead_distance = clamp(calculate_lookahead(abs_curvature, current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
-
+    
+    //calculate look ahead distance 
+    float look_ahead_distance = clamp(calculate_lookahead(current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
+    
     // Define the target point
     this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
 
     // 1. Create a tf2 Quaternion object
     tf2::Quaternion q;
-
 
     // 2. Convert the message quaternion to the tf2 object
     tf2::fromMsg(current_pose.pose.orientation, q);
@@ -46,7 +41,6 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     // 3. Get the yaw
     double roll, pitch, yaw;
     tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
-
 
     //trasform target to local
     float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
@@ -57,14 +51,22 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     //update target point
     this->target_point.pose.position.x = final_x;
     this->target_point.pose.position.y = final_y;
+    
+    //Get the euclidean distance to the target point
+    float distance_to_target = std::sqrt(std::pow(this->target_point.pose.position.x, 2) + std::pow(this->target_point.pose.position.y, 2));
 
     // Get the dt since last call
     rclcpp::Time currentTime = rclcpp::Clock().now();
     float dt = (currentTime - this->prevTime).seconds();
     this->prevTime = currentTime;
 
+    // Get absolute curvature of the path
+    float abs_curvature = preview_abs_curvature(path);
+
     // Calculate desired speed and limit acceleration
     float desired_speed = calculate_desiredSpeed(abs_curvature);
+
+    control_output.target_ms = desired_speed;
 
     //Limit change of desired speed per iteration
     float max_change = 1.0f; // Max change in speed per iteration
@@ -81,22 +83,14 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
 
     float steering_angle = 0.0;
 
-    // If the target point is in front of the car then consider the desired angle to be 0
     if(abs(this->target_point.pose.position.y) >= 0.01){
 
         // Calculate angle between the closest point and (0,0) (because the point is returned relative to (0,0)) instead of the rear!!
-        float alpha = atan2(this->target_point.pose.position.y, this->target_point.pose.position.x - DEFAULT_IMU_TO_REAR_AXLE);
+        float alpha = atan2(this->target_point.pose.position.y, this->target_point.pose.position.x);
 
         // Calculate steering angle (pure pursuit algorithm)
-        steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), look_ahead_distance);
+        steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), distance_to_target);
     }
-
-    // Calculate feedfoward steering
-    float delta_ff = atan(WHEELBASE_M * curvature);
-    
-    steering_angle += 0.5 * delta_ff;
-
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Preview curvature: %.4f, Feedforward angle: %.2f, final steering angle: %.2f ", curvature, delta_ff, steering_angle);
 
     // Apply low pass filter to steering angle
     control_output.steering_angle = clamp(lowPassFilter(steering_angle, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
@@ -145,9 +139,9 @@ int Pursuit_Algorithm::fastRound(float x) {
     return static_cast<int>(x + 0.5f);
 }
 
-float Pursuit_Algorithm::calculate_lookahead(float preview_curvature, float speed){
-    // Lookahead distance increases with speed and decreases with curvature
-    float look_ahead_distance = (MIN_LOOKAHEAD + this->lookahead_time * speed)/(1.0f + this->curvature_gain * preview_curvature); 
+float Pursuit_Algorithm::calculate_lookahead(float speed){
+
+    float look_ahead_distance = this->lookahead_time * speed;
     return look_ahead_distance;
 }
 
@@ -160,23 +154,13 @@ float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
 
 float Pursuit_Algorithm::preview_abs_curvature(lart_msgs::msg::PathSpline path){
     float sum_curvature = 0.0f;
-    for(int i = 0; i < PATH_SIZE; i++){
+    for(size_t i = 0; i < path.poses.size(); i++){
+
         float curvature = std::abs(path.curvature[i]);
         //float curvature = path.curvature[i];
         sum_curvature += curvature;
     }
-    float preview_curvature = sum_curvature / PATH_SIZE;
-    return preview_curvature;
-}
-
-float Pursuit_Algorithm::preview_curvature(lart_msgs::msg::PathSpline path){
-    float sum_curvature = 0.0f;
-    for(int i = 0; i < PATH_SIZE; i++){
-        //float curvature = std::abs(path.curvature[i]);
-        float curvature = path.curvature[i];
-        sum_curvature += curvature;
-    }
-    float preview_curvature = sum_curvature / PATH_SIZE;
+    float preview_curvature = sum_curvature / path.poses.size();
     return preview_curvature;
 }
 
@@ -185,32 +169,12 @@ float Pursuit_Algorithm::calculate_desiredSpeed(float preview_curvature){
         if(preview_curvature < 0.0001f){
             preview_curvature = 0.0001f; // Avoid division by zero
         }
-        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/preview_curvature) * this->kv);
-        //RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "Velocity before: %.2f, kv: %.2f, radious: %.2f<", velocity, this->kv, (1.0f/preview_curvature));
+        float velocity = std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/preview_curvature));
         velocity = clamp(velocity, 0.0f, this->missionSpeed);
         return velocity;
     }
     return 0.0f;
 }
-
-// float Pursuit_Algorithm::calculate_desiredSpeed(lart_msgs::msg::PathSpline path){
-//     if(closest_point_index > -1){
-//         float sum_velocity = 0.0;
-
-//         for(int i = 0; i<30; i++){
-//             float curvature = std::abs(path.curvature[i]);
-//             if(curvature < 0.0001f){
-//                 curvature = 0.0001f; // Avoid division by zero
-//             }
-//             sum_velocity += std::sqrt(this->vehicle.get_grip_coefficient() * LART_GRAVITY * (1.0f/curvature) * this->kv);
-//         }
-//         float velocity = sum_velocity / 30.0f; // Average velocity
-//         velocity = clamp(velocity, 0.0f, this->missionSpeed);
-
-//         return velocity;
-//     }
-//     return 0.0f;
-// }
 
 
 geometry_msgs::msg::PoseStamped Pursuit_Algorithm::get_target_point()
@@ -227,25 +191,6 @@ PID_Controller::PID_Controller(float kp, float ki, float kd)
     error_prev = 0;
     error_sum = 0;
 }
-
-// float PID_Controller::compute(float setpoint, float input)
-// {
-//     error = setpoint - input;
-//     error_sum += error;
-//     error_prev = error;
-
-//     float output = this->kp * error + this->ki * error_sum + this->kd * (error - error_prev);
-
-//     if(output > MAX_SIG_VAL){
-//         error_sum -= error;
-//         output = MAX_SIG_VAL;
-//     }else if(output < MIN_SIG_VAL){
-//         error_sum -= error;
-//         output = MIN_SIG_VAL;
-//     }
-
-//     return output;
-// }
 
 float PID_Controller::compute(float setpoint, float input, float dt)
 {

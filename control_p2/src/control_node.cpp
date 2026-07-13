@@ -374,7 +374,7 @@ void ControlP2::checkTimeStamp()
 
     if (seconds > 3.0)
     {
-        RCLCPP_INFO(this->get_logger(), "3 seconds have passed since the Driving signal, ");
+        RCLCPP_INFO(this->get_logger(), "3 seconds have passed since the Driving signal");
         this->ready = true;
     }
 }

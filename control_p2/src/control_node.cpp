@@ -83,8 +83,11 @@ ControlP2::ControlP2() : Node("control_node")
     /*                                  SUBSCRIBERS                                 */
     /*------------------------------------------------------------------------------*/
 
-    path_subscriber = this->create_subscription<lart_msgs::msg::PathSpline>(
+    path_subscriber = this->create_subscription<lart_msgs::msg::PathArray>(
         TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));  
+
+    final_path_subscriber = this->create_subscription<lart_msgs::msg::PathArray>(
+        TOPIC_FINAL_PATH, 10, std::bind(&ControlP2::final_path_callback, this, _1));  
 
     dynamics_subscriber = this->create_subscription<lart_msgs::msg::Dynamics>(
         TOPIC_CONTROL_FEEDBACK, 10, std::bind(&ControlP2::dynamics_callback, this, _1));
@@ -197,9 +200,20 @@ void ControlP2::lap_callback(const lart_msgs::msg::SlamStats::SharedPtr msg)
     }
 }
 
-void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)
+void ControlP2::path_callback(const lart_msgs::msg::PathArray::SharedPtr msg)
 {
+    if(this->finalPathReceived){
+        return;
+    }
     // save current path
+    this->control_manager->set_path(*msg);
+}
+
+void ControlP2::final_path_callback(const lart_msgs::msg::PathArray::SharedPtr msg){
+    if(!this->finalPathReceived){
+        this->finalPathReceived = true;
+    }
+    // save the current portion of the final path
     this->control_manager->set_path(*msg);
 }
 

@@ -83,7 +83,7 @@ void ControlManager::terminate_algorithm(){
     this->algorithm.reset(); 
 }
 
-void ControlManager::set_path(lart_msgs::msg::PathSpline path){
+void ControlManager::set_path(lart_msgs::msg::PathArray path){
     this->currentPath = path;
 }
 

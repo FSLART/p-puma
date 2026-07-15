@@ -12,7 +12,7 @@
 class ControlManager {
     public: 
         ControlManager();
-        void set_path(lart_msgs::msg::PathSpline path);
+        void set_path(lart_msgs::msg::PathArray path);
         void set_dynamics(lart_msgs::msg::Dynamics dynamics);
         void set_pose(geometry_msgs::msg::PoseStamped pose);
         void initialize_algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd);
@@ -45,7 +45,7 @@ class ControlManager {
         float currentSteering;
         float missionSpeed;
         geometry_msgs::msg::PoseStamped currentPose;
-        lart_msgs::msg::PathSpline currentPath;
+        lart_msgs::msg::PathArray currentPath;
         float lookahead;
 };
 

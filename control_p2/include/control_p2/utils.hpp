@@ -20,6 +20,7 @@
 #include "lart_msgs/msg/state.hpp"
 #include "lart_msgs/msg/mission.hpp"
 #include "lart_msgs/msg/slam_stats.hpp"
+#include "lart_msgs/msg/path_array.hpp"
 
 // Common values
 #include "lart_common.h"

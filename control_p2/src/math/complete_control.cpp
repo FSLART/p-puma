@@ -66,19 +66,17 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
     float dt = (currentTime - this->prevTime).seconds();
     this->prevTime = currentTime;
 
-    // Does this path point already carry a planned velocity? The planner
-    // fills points with -1 until the map/profile exists (e.g. first lap);
-    // anything above that is a real planned target speed.
-    bool has_velocity_profile = (this->closest_point_index >= 0) &&
-        (static_cast<size_t>(this->closest_point_index) < path.points.size()) &&
-        (path.points[this->closest_point_index].velocity > -1.0f);
+    // Define if the path has velocity profile
+    bool has_velocity_profile = false;
+    if(path.points[this->closest_point_index].velocity > -1.0f){
+        has_velocity_profile = true;
+    }
 
     float desired_speed;
     float ff_cmd = 0.0f;
 
     if(has_velocity_profile){
-        // Trust the offline-planned profile instead of re-deriving a speed
-        // from live curvature.
+        // Trust the offline-planned profile instead of re-deriving a speed from live curvature.
         desired_speed = clamp(path.points[this->closest_point_index].velocity, 0.0f, this->missionSpeed);
 
         // Feedforward acceleration (energy form) from the planned profile

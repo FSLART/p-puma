@@ -15,6 +15,8 @@ endif()
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(super_node REQUIRED)
 find_package(lart_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -28,13 +30,13 @@ include_directories(
 )
 
 add_library(${library_name} ${lib_srcs})
-ament_target_dependencies(${library_name} rclcpp lart_msgs tf2 tf2_geometry_msgs visualization_msgs)
+ament_target_dependencies(${library_name} rclcpp rclcpp_lifecycle super_node lart_msgs tf2 tf2_geometry_msgs visualization_msgs)
 
 # Ensure the warning is disabled for the library target as well
 target_compile_options(${library_name} PRIVATE -Wno-unknown-pragmas)
 
 add_executable(control_node src/control_node.cpp)
-ament_target_dependencies(control_node rclcpp lart_msgs tf2 tf2_geometry_msgs visualization_msgs)
+ament_target_dependencies(control_node rclcpp rclcpp_lifecycle super_node lart_msgs tf2 tf2_geometry_msgs visualization_msgs)
 
 # Disable the warning for the executable target
 target_compile_options(control_node PRIVATE -Wno-unknown-pragmas)

@@ -2,12 +2,15 @@
 
 using std::placeholders::_1;
 
-ControlP2::ControlP2() : Node("control_node")
+ControlP2::ControlP2() : ParentNode("control_node")
 {
     /*------------------------------------------------------------------------------*/
     /*                                   ROS PARAMS                                 */
     /*------------------------------------------------------------------------------*/
-    
+    // Parameters are declared once, in the constructor, so a configure -> cleanup
+    // -> configure cycle does not re-declare them (which would throw). Their values
+    // are read in configure_impl().
+
     //Flags
     this->declare_parameter<bool>("sim_mode", false);
     this->declare_parameter<bool>("log_info", false);
@@ -32,7 +35,11 @@ ControlP2::ControlP2() : Node("control_node")
     this->declare_parameter<float>("kp", 1.0f);
     this->declare_parameter<float>("ki", 0.1f);
     this->declare_parameter<float>("kd", 0.05f);
+}
 
+// Unconfigured -> Inactive: read parameters and create all pub/sub/manager resources.
+ControlP2::CallbackReturn ControlP2::configure_impl()
+{
     this->get_parameter("sim_mode", sim_mode);
     this->get_parameter("log_info", log_info);
     this->get_parameter("target_marker_visible", target_marker_visible);
@@ -67,17 +74,6 @@ ControlP2::ControlP2() : Node("control_node")
     marker_publisher = this->create_publisher<visualization_msgs::msg::Marker>(TOPIC_TARGET_MARKER, 10);
 
     lookahead_publisher = this->create_publisher<std_msgs::msg::Float32>("lookahead_distance", 10);
-
-    /*------------------------------------------------------------------------------*/
-    /*                                PUBLISHERS TIMER                              */
-    /*------------------------------------------------------------------------------*/
-
-    // Turn Hz into duration
-    std::chrono::duration<double> interval = std::chrono::duration<double>(1.0 / FREQUENCY);
-
-    control_timer = this->create_wall_timer(interval,
-        std::bind(&ControlP2::dispatchDynamicsCMD, this));
-
 
     /*------------------------------------------------------------------------------*/
     /*                                  SUBSCRIBERS                                 */
@@ -124,6 +120,72 @@ ControlP2::ControlP2() : Node("control_node")
         this->control_manager->initialize_algorithm(default_max_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
     }
 
+    RCLCPP_INFO(this->get_logger(), "Control node configured.");
+    return CallbackReturn::SUCCESS;
+}
+
+// Inactive -> Active: start the control-loop dispatch timer. Active corresponds to
+// the car being allowed to actuate (race state DRIVING).
+ControlP2::CallbackReturn ControlP2::activate_impl()
+{
+    // Turn Hz into duration
+    std::chrono::duration<double> interval = std::chrono::duration<double>(1.0 / FREQUENCY);
+
+    control_timer = this->create_wall_timer(interval,
+        std::bind(&ControlP2::dispatchDynamicsCMD, this));
+
+    RCLCPP_INFO(this->get_logger(), "Control node active — dispatching commands at %.0f Hz.", (double)FREQUENCY);
+    return CallbackReturn::SUCCESS;
+}
+
+// Active -> Inactive: stop dispatching control commands.
+ControlP2::CallbackReturn ControlP2::deactivate_impl()
+{
+    if (control_timer) {
+        control_timer->cancel();
+        control_timer.reset();
+    }
+    RCLCPP_INFO(this->get_logger(), "Control node deactivated.");
+    return CallbackReturn::SUCCESS;
+}
+
+// Inactive -> Unconfigured: release everything created in configure_impl().
+ControlP2::CallbackReturn ControlP2::cleanup_impl()
+{
+    if (control_timer) {
+        control_timer->cancel();
+        control_timer.reset();
+    }
+
+    param_callback_handle_.reset();
+
+    path_subscriber.reset();
+    dynamics_subscriber.reset();
+    state_subscriber.reset();
+    mission_subscriber.reset();
+    position_subscriber.reset();
+    lap_subscriber.reset();
+
+    dynamics_torque_publisher.reset();
+    dynamics_rpm_publisher.reset();
+    marker_publisher.reset();
+    lookahead_publisher.reset();
+
+    delete control_manager;
+    control_manager = nullptr;
+
+    ready = false;
+    missionSet = false;
+    race_finished = false;
+    drivingSignalTimeStamp.reset();
+
+    RCLCPP_INFO(this->get_logger(), "Control node cleaned up.");
+    return CallbackReturn::SUCCESS;
+}
+
+ControlP2::CallbackReturn ControlP2::shutdown_impl()
+{
+    return cleanup_impl();
 }
 
 void ControlP2::state_callback(const lart_msgs::msg::State::SharedPtr msg)
@@ -413,7 +475,9 @@ void ControlP2::cleanUp()
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<ControlP2>());
+    auto node = std::make_shared<ControlP2>();
+    // Lifecycle nodes are spun via their base node interface.
+    rclcpp::spin(node->get_node_base_interface());
     rclcpp::shutdown();
     return 0;
 }

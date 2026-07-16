@@ -12,9 +12,16 @@
 #include <chrono>
 #include "std_msgs/msg/float32.hpp"
 
+#include "super_node/parent_node.hpp"
 
 
-class ControlP2 : public rclcpp::Node
+// ControlP2 is a managed lifecycle node (extends super_node::ParentNode) so the
+// race_director can bring the control loop up/down through the lifecycle services.
+// Active == the car may actuate (DRIVING); Inactive == the control loop timer is
+// stopped. NOTE: the actuation publishers below are deliberately regular (not
+// lifecycle) publishers so the emergency brake command in cleanUp() still goes out
+// even while the node is being deactivated on EMERGENCY.
+class ControlP2 : public super_node::ParentNode
 {
 public:
 
@@ -29,6 +36,14 @@ public:
     void lap_callback(const lart_msgs::msg::SlamStats::SharedPtr msg);
     rcl_interfaces::msg::SetParametersResult parametersCallback(const std::vector<rclcpp::Parameter> &params);
     void cleanUp();
+
+protected:
+    // Lifecycle hooks required by ParentNode.
+    CallbackReturn configure_impl() override;
+    CallbackReturn activate_impl() override;
+    CallbackReturn deactivate_impl() override;
+    CallbackReturn cleanup_impl() override;
+    CallbackReturn shutdown_impl() override;
 
 private:
 

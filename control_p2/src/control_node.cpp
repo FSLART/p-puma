@@ -240,7 +240,7 @@ void ControlP2::dispatchDynamicsCMD()
     }
 
     // Check if we have received a path
-    if(this->control_manager->get_currentPath().poses.empty()){
+    if(this->control_manager->get_currentPath().points.empty()){
         RCLCPP_WARN(this->get_logger(), "No path received yet");
         return;
     }

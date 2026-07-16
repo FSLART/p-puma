@@ -98,7 +98,7 @@ void ControlManager::set_pose(geometry_msgs::msg::PoseStamped pose){
 
 void ControlManager::initialize_algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd){
     this->missionSpeed = missionSpeed;
-    this->algorithm = std::make_unique<Pursuit_Algorithm>(this->missionSpeed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
+    this->algorithm = std::make_unique<Control_Algorithm>(this->missionSpeed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
 }
 
 void ControlManager::set_missionSpeed(float missionSpeed){
@@ -150,11 +150,11 @@ void ControlManager::set_kd(float kd){
     }
 }
 
-Pursuit_Algorithm * ControlManager::get_algorithm(){
+Control_Algorithm * ControlManager::get_algorithm(){
     return this->algorithm.get();
 }
 
-lart_msgs::msg::PathSpline ControlManager::get_currentPath(){
+lart_msgs::msg::PathArray ControlManager::get_currentPath(){
     return this->currentPath;
 }
 

@@ -28,7 +28,7 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
     lart_msgs::msg::DynamicsCMD control_output;
 
     //calculate look ahead distance 
-    float look_ahead_distance = clamp(calculate_lookahead(current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
+    float look_ahead_distance = clamp(calculate_lookahead(0.0,current_speed), MIN_LOOKAHEAD, MAX_LOOKAHEAD);
 
     // Define the target point
     this->closest_point_index = fastRound((look_ahead_distance)/SPACE_BETWEEN_POINTS);
@@ -44,8 +44,8 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
     tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
 
     // //trasform target to local
-    float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
-    float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
+    float shiffet_x = path.points[this->closest_point_index].x - current_pose.pose.position.x;
+    float shiffet_y = path.points[this->closest_point_index].y - current_pose.pose.position.y;
     float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
     float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
 
@@ -128,21 +128,22 @@ int Control_Algorithm::fastRound(float x) {
     return static_cast<int>(x + 0.5f);
 }
 
-float Control_Algorithm::preview_abs_curvature(lart_msgs::msg::PathSpline path){
+float Control_Algorithm::preview_abs_curvature(lart_msgs::msg::PathArray path){
     float sum_curvature = 0.0f;
-    for(size_t i = 0; i < path.poses.size(); i++){
-        float curvature = std::abs(path.curvature[i]);
+    for(size_t i = 0; i < path.points.size(); i++){
+        float curvature = std::abs(path.points[i].curvature);
         //float curvature = path.curvature[i];
         sum_curvature += curvature;
     }
-    float preview_curvature = sum_curvature / path.poses.size();
+    float preview_curvature = sum_curvature / path.points.size();
 
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"),"Tamanho do path: %ld, Curvature: %f", path.poses.size(), preview_curvature);
+    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"),"Tamanho do path: %ld, Curvature: %f", path.points.size(), preview_curvature);
 
     return preview_curvature;
 }
 
-float Control_Algorithm::calculate_lookahead(float speed){
+float Control_Algorithm::calculate_lookahead(float preview_curvature, float speed){
+    (void)preview_curvature; // Unused parameter
     float look_ahead_distance = this->lookahead_time * speed;
     return look_ahead_distance;
 }

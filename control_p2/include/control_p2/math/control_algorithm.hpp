@@ -48,7 +48,7 @@ class Control_Algorithm {
         int fastRound(float x);
         float calculate_desiredSpeed(float preview_curvature);
         float lowPassFilter(float input, float dt);
-        float preview_abs_curvature(lart_msgs::msg::PathSpline path);
+        float preview_abs_curvature(lart_msgs::msg::PathArray path);
         
         
         // Parameters

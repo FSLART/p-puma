@@ -25,8 +25,8 @@ class ControlManager {
         void set_ki(float ki);
         void set_kd(float kd);
         lart_msgs::msg::DynamicsCMD getDynamicsCMD();
-        Pursuit_Algorithm * get_algorithm();
-        lart_msgs::msg::PathSpline get_currentPath();
+        Control_Algorithm * get_algorithm();
+        lart_msgs::msg::PathArray get_currentPath();
         geometry_msgs::msg::PoseStamped get_currentPose();
         float get_currentSpeed();
         float get_currentSteering();
@@ -38,7 +38,7 @@ class ControlManager {
         //float get_lookahead_distance();
 
     private:
-        std::unique_ptr<Pursuit_Algorithm> algorithm;
+        std::unique_ptr<Control_Algorithm> algorithm;
     protected:
         // Parameters
         float currentSpeed;

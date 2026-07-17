@@ -68,7 +68,7 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
 
     // Define if the path has velocity profile
     bool has_velocity_profile = false;
-    if(path.points[this->closest_point_index].velocity > -1.0f){
+    if(path.points[0].velocity > -1.0f){
         has_velocity_profile = true;
     }
 
@@ -77,10 +77,10 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
 
     if(has_velocity_profile){
         // Trust the offline-planned profile instead of re-deriving a speed from live curvature.
-        desired_speed = clamp(path.points[this->closest_point_index].velocity, 0.0f, this->missionSpeed);
+        desired_speed = clamp(path.points[0].velocity, 0.0f, this->missionSpeed);
 
         // Feedforward acceleration (energy form) from the planned profile
-        float a_ff = calculate_feedforward_accel(path, this->closest_point_index);
+        float a_ff = calculate_feedforward_accel(path);
         float mu_long = (a_ff >= 0.0f) ? MU_DRIVE : MU_BRAKE;
         ff_cmd = a_ff / (mu_long * LART_GRAVITY);
     } else {
@@ -191,35 +191,22 @@ float Control_Algorithm::preview_abs_curvature(lart_msgs::msg::PathArray path){
     return preview_curvature;
 }
 
-float Control_Algorithm::calculate_feedforward_accel(const lart_msgs::msg::PathArray &path, int idx){
+float Control_Algorithm::calculate_feedforward_accel(const lart_msgs::msg::PathArray &path){
     size_t n = path.points.size();
-    if(n < 2 || idx < 0){
+    if(n < 2){
         return 0.0f;
     }
 
-    size_t i = static_cast<size_t>(idx);
-    size_t j;
-
-    // Prefer the next point; fall back to the previous one at the end of the
-    // received chunk (mirrors "last point copies a_ff[N-2]" from the spec).
-    if(i + 1 < n && path.points[i + 1].velocity > -1.0f){
-        j = i + 1;
-    } else if(i > 0 && path.points[i - 1].velocity > -1.0f){
-        j = i - 1;
-    } else {
-        return 0.0f;
-    }
-
-    float v_i = path.points[i].velocity;
-    float v_j = path.points[j].velocity;
-    float ds = path.points[j].distance - path.points[i].distance;
+    float v_i = path.points[0].velocity;
+    float v_j = path.points[1].velocity;
+    float ds = path.points[1].distance - path.points[0].distance;
 
     if(std::abs(ds) < 1e-4f){
         return 0.0f;
     }
 
-    // Energy form: (v_j^2 - v_i^2) / (2*ds). Sign-consistent whichever
-    // neighbour was used (ds flips sign with the direction).
+    // Energy form: (v_j^2 - v_i^2) / (2*ds), evaluated at the car's current
+    // position (path.points[0]) instead of the steering lookahead point.
     return (v_j * v_j - v_i * v_i) / (2.0f * ds);
 }
 

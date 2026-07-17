@@ -49,7 +49,7 @@ class Control_Algorithm {
         float calculate_desiredSpeed(float preview_curvature);
         float lowPassFilter(float input, float dt);
         float preview_abs_curvature(lart_msgs::msg::PathArray path);
-        float calculate_feedforward_accel(const lart_msgs::msg::PathArray &path, int idx);
+        float calculate_feedforward_accel(const lart_msgs::msg::PathArray &path);
         
         
         // Parameters

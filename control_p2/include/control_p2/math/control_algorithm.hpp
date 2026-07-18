@@ -17,14 +17,21 @@ class PID_Controller{
         //Functions
         PID_Controller() = default;
         PID_Controller(float kp, float ki, float kd);
-        float compute(float setpoint, float input, float dt);
+
+        // Feedforward-aware PID with COMBINED-signal anti-windup.
+        // ff_cmd is the already-normalized feedforward command. Because ff and
+        // fb sum before the +/-1 saturation, watching only the PID output is
+        // insufficient: integration is frozen when the combined command would
+        // saturate AND the error pushes further into saturation. Returns fb_cmd.
+        float compute(float setpoint, float input, float dt, float ff_cmd);
         void set_P(float kp);
         void set_I(float ki);
         void set_D(float kd);
-            
+        void reset();
+
     protected:
         float kp, ki, kd;
-        float error, error_prev, error_sum;
+        float error_prev, error_sum;
 };
 
 class Control_Algorithm {

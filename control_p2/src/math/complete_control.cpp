@@ -65,6 +65,9 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
     rclcpp::Time currentTime = rclcpp::Clock().now();
     float dt = (currentTime - this->prevTime).seconds();
     this->prevTime = currentTime;
+    if (dt <= 0.0f) {
+        dt = 1.0f / FREQUENCY;                            // guard first tick / clock glitches
+    }
 
     // Define if the path has velocity profile
     bool has_velocity_profile = false;
@@ -104,8 +107,9 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
 
     // Apply PID controller (feedback) and add the feedforward term on top
     // (ff_cmd is 0.0 in the no-profile fallback, so this reduces to the
-    // previous pure-feedback behaviour)
-    float fb_cmd = this->pid_controller.compute(desired_speed, current_speed, dt);
+    // previous pure-feedback behaviour). ff_cmd is passed in so the
+    // combined-signal anti-windup can see the full command, not just fb_cmd.
+    float fb_cmd = this->pid_controller.compute(desired_speed, current_speed, dt, ff_cmd);
     float acc_cmd = clamp(ff_cmd + fb_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
 
     float steering_angle = 0.0;
@@ -233,41 +237,31 @@ PID_Controller::PID_Controller(float kp, float ki, float kd)
     this->kp = kp;
     this->ki = ki;
     this->kd = kd;
-    error = 0;
     error_prev = 0;
     error_sum = 0;
 }
 
-float PID_Controller::compute(float setpoint, float input, float dt)
+float PID_Controller::compute(float setpoint, float input, float dt, float ff_cmd)
 {
-    error = setpoint - input;
+    float error = setpoint - input;
 
-    // Integral
-    error_sum += error * dt;
+    // Predict the COMBINED command with the current (not-yet-updated) integrator.
+    float fb_preview = kp * error + ki * error_sum + kd * (error - error_prev) / dt;
+    float cmd_preview = ff_cmd + fb_preview;
 
-    // Derivative
+    // Freeze integration if the combined command is saturating AND the error
+    // pushes it further into saturation (same sign).
+    bool saturating = (std::abs(cmd_preview) > (float)MAX_SIG_VAL) &&
+                      ((error >= 0.0f) == (cmd_preview >= 0.0f));
+    if (!saturating) {
+        error_sum += error * dt;
+    }
+
     float derivative = (error - error_prev) / dt;
-
-    // PID output
-    float output =
-        kp * error +
-        ki * error_sum +
-        kd * derivative;
-
-    // Save previous error
     error_prev = error;
 
-    // Clamp + anti-windup
-    if(output > MAX_SIG_VAL){
-        error_sum -= error * dt;
-        output = MAX_SIG_VAL;
-    }
-    else if(output < MIN_SIG_VAL){
-        error_sum -= error * dt;
-        output = MIN_SIG_VAL;
-    }
-
-    return output;
+    // feedback command (combine + clamp happens in calculate_control)
+    return kp * error + ki * error_sum + kd * derivative;
 }
 
 void PID_Controller::set_P(float kp){
@@ -278,4 +272,8 @@ void PID_Controller::set_I(float ki){
 }
 void PID_Controller::set_D(float kd){
     this->kd = kd;
+}
+void PID_Controller::reset(){
+    this->error_sum = 0.0f;
+    this->error_prev = 0.0f;
 }

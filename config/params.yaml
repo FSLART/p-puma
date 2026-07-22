@@ -9,7 +9,7 @@ puma_node:
     default_max_speed: 2.5
     acc_speed: 2.0
     skidpad_speed: 2.0
-    ebs_speed: 2.0
+    ebs_speed: 12.0
     lookahead_time: 0.5
     tau: 0.1
     kv: 0.2

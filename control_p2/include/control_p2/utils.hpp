@@ -63,7 +63,7 @@
 
 #define FREQUENCY 50 // Hz
 
-#define MAX_RPM_DELTA 3.0f
+#define MAX_RPM_DELTA 10.0f
 #define MAX_MS_DELTA 0.05f
 
 // PID CONTROLLER SIGNAL LIMITS

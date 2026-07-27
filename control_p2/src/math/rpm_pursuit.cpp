@@ -1,8 +1,8 @@
-#include "control_p2/math/rpm_pursuit.hpp"
+#include "control_p2/math/control_algorithm.hpp"
 #include <algorithm>
 
 
-Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd) {
+Control_Algorithm::Control_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd) {
     this->missionSpeed = missionSpeed;
     this->lookahead_time = lookahead_time;
     this->tau = tau;
@@ -21,7 +21,7 @@ Pursuit_Algorithm::Pursuit_Algorithm(float missionSpeed, float lookahead_time, f
     (void)kd; // Unused for this algorithm
  }
 
-lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped current_pose,
+lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg::PathArray path, geometry_msgs::msg::PoseStamped current_pose,
              float current_speed, float current_steering){
 
     //Ignore unused parameters
@@ -48,8 +48,8 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
 
     // //trasform target to local
-    float shiffet_x = path.poses[this->closest_point_index].pose.position.x - current_pose.pose.position.x;
-    float shiffet_y = path.poses[this->closest_point_index].pose.position.y - current_pose.pose.position.y;
+    float shiffet_x = path.points[this->closest_point_index].x - current_pose.pose.position.x;
+    float shiffet_y = path.points[this->closest_point_index].y - current_pose.pose.position.y;
     float final_x = shiffet_x * cos(-yaw) - shiffet_y * sin(-yaw);
     float final_y = shiffet_x * sin(-yaw) + shiffet_y * cos(-yaw);
 
@@ -95,7 +95,7 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     control_output.steering_angle = clamp(lowPassFilter(steering_angle, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
     control_output.rpm = static_cast<decltype(control_output.rpm)>(desired_rpm_clamped);
 
-    RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "steering_angle: %.2f, rpm: %d", control_output.steering_angle, control_output.rpm);
+    RCLCPP_INFO(rclcpp::get_logger("Control_Algorithm"), "steering_angle: %.2f, rpm: %d", control_output.steering_angle, control_output.rpm);
 
     //save previous output
     this->prevOutput = control_output;
@@ -103,67 +103,67 @@ lart_msgs::msg::DynamicsCMD Pursuit_Algorithm::calculate_control(lart_msgs::msg:
     return control_output;
 }
 
-void Pursuit_Algorithm::set_missionSpeed(float missionSpeed){
+void Control_Algorithm::set_missionSpeed(float missionSpeed){
     this->missionSpeed = missionSpeed;
 }
 
-void Pursuit_Algorithm::set_lookahead_time(float lookahead_time){
+void Control_Algorithm::set_lookahead_time(float lookahead_time){
     this->lookahead_time = lookahead_time;
 }
 
-void Pursuit_Algorithm::set_tau(float tau){
+void Control_Algorithm::set_tau(float tau){
     this->tau = tau;
 }
 
-void Pursuit_Algorithm::set_kv(float kv){
+void Control_Algorithm::set_kv(float kv){
     this->kv = kv;
 }
 
-void Pursuit_Algorithm::set_curvature_gain(float curvature_gain){
+void Control_Algorithm::set_curvature_gain(float curvature_gain){
     this->curvature_gain = curvature_gain;
 }
 
-void Pursuit_Algorithm::set_kp(float kp){
+void Control_Algorithm::set_kp(float kp){
     // Not implemented for this algorithm   
 }
 
-void Pursuit_Algorithm::set_ki(float ki){
+void Control_Algorithm::set_ki(float ki){
     // Not implemented for this algorithm
 }
 
-void Pursuit_Algorithm::set_kd(float kd){
+void Control_Algorithm::set_kd(float kd){
     // Not implemented for this algorithm
 }
 
-int Pursuit_Algorithm::fastRound(float x) {
+int Control_Algorithm::fastRound(float x) {
     return static_cast<int>(x + 0.5f);
 }
 
-float Pursuit_Algorithm::preview_abs_curvature(lart_msgs::msg::PathSpline path){
+float Control_Algorithm::preview_abs_curvature(lart_msgs::msg::PathArray path){
     float sum_curvature = 0.0f;
-    for(int i = 0; i < PATH_SIZE; i++){
-        float curvature = std::abs(path.curvature[i]);
+    for(int i = 0; i < path.points.size(); i++){
+        float curvature = std::abs(path.points[i].curvature);
         //float curvature = path.curvature[i];
         sum_curvature += curvature;
     }
-    float preview_curvature = sum_curvature / PATH_SIZE;
+    float preview_curvature = sum_curvature / path.points.size();
     return preview_curvature;
 }
 
-float Pursuit_Algorithm::calculate_lookahead(float preview_curvature, float speed){
+float Control_Algorithm::calculate_lookahead(float preview_curvature, float speed){
     // Lookahead distance increases with speed and decreases with curvature
     float look_ahead_distance = (MIN_LOOKAHEAD + this->lookahead_time * speed)/(1.0f + this->curvature_gain * preview_curvature); 
     return look_ahead_distance;
 }
 
-float Pursuit_Algorithm::lowPassFilter(float input, float dt) {
+float Control_Algorithm::lowPassFilter(float input, float dt) {
         if (dt <= 0.0) return prevOutput.steering_angle;  // avoid division by zero
         float alpha = dt / (this->tau + dt);
         float output = alpha * input + (1.0 - alpha) * prevOutput.steering_angle;
         return output;
 }
 
-float Pursuit_Algorithm::calculate_desiredSpeed(float preview_curvature){
+float Control_Algorithm::calculate_desiredSpeed(float preview_curvature){
     if(closest_point_index > -1){ 
         if(preview_curvature < 0.0001f){
             preview_curvature = 0.0001f; // Avoid division by zero
@@ -175,7 +175,7 @@ float Pursuit_Algorithm::calculate_desiredSpeed(float preview_curvature){
     return 0.0f;
 }
 
-geometry_msgs::msg::PoseStamped Pursuit_Algorithm::get_target_point()
+geometry_msgs::msg::PoseStamped Control_Algorithm::get_target_point()
 {
     return this->target_point;
 }

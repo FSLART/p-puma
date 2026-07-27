@@ -12,7 +12,7 @@
 class ControlManager {
     public: 
         ControlManager();
-        void set_path(lart_msgs::msg::PathSpline path);
+        void set_path(lart_msgs::msg::PathArray path);
         void set_dynamics(lart_msgs::msg::Dynamics dynamics);
         void set_pose(geometry_msgs::msg::PoseStamped pose);
         void initialize_algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd);
@@ -25,8 +25,8 @@ class ControlManager {
         void set_ki(float ki);
         void set_kd(float kd);
         lart_msgs::msg::DynamicsCMD getDynamicsCMD();
-        Pursuit_Algorithm * get_algorithm();
-        lart_msgs::msg::PathSpline get_currentPath();
+        Control_Algorithm * get_algorithm();
+        lart_msgs::msg::PathArray get_currentPath();
         geometry_msgs::msg::PoseStamped get_currentPose();
         float get_currentSpeed();
         float get_currentSteering();
@@ -38,14 +38,14 @@ class ControlManager {
         //float get_lookahead_distance();
 
     private:
-        std::unique_ptr<Pursuit_Algorithm> algorithm;
+        std::unique_ptr<Control_Algorithm> algorithm;
     protected:
         // Parameters
         float currentSpeed;
         float currentSteering;
         float missionSpeed;
         geometry_msgs::msg::PoseStamped currentPose;
-        lart_msgs::msg::PathSpline currentPath;
+        lart_msgs::msg::PathArray currentPath;
         float lookahead;
 };
 

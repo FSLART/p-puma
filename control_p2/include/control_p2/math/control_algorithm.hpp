@@ -1,5 +1,5 @@
-#ifndef ACC_PURSUIT_H_
-#define ACC_PURSUIT_H_
+#ifndef CONTROL_ALGORITHM_H_
+#define CONTROL_ALGORITHM_H_
 
 #include "../utils.hpp"
 
@@ -17,20 +17,27 @@ class PID_Controller{
         //Functions
         PID_Controller() = default;
         PID_Controller(float kp, float ki, float kd);
-        float compute(float setpoint, float input, float dt);
+
+        // Feedforward-aware PID with COMBINED-signal anti-windup.
+        // ff_cmd is the already-normalized feedforward command. Because ff and
+        // fb sum before the +/-1 saturation, watching only the PID output is
+        // insufficient: integration is frozen when the combined command would
+        // saturate AND the error pushes further into saturation. Returns fb_cmd.
+        float compute(float setpoint, float input, float dt, float ff_cmd);
         void set_P(float kp);
         void set_I(float ki);
         void set_D(float kd);
-            
+        void reset();
+
     protected:
         float kp, ki, kd;
-        float error, error_prev, error_sum;
+        float error_prev, error_sum;
 };
 
-class Pursuit_Algorithm {
+class Control_Algorithm {
     public:
-        Pursuit_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd);
-        lart_msgs::msg::DynamicsCMD calculate_control(lart_msgs::msg::PathSpline path, geometry_msgs::msg::PoseStamped pose,
+        Control_Algorithm(float missionSpeed, float lookahead_time, float tau, float kv, float curvature_gain, float kp, float ki, float kd);
+        lart_msgs::msg::DynamicsCMD calculate_control(lart_msgs::msg::PathArray path, geometry_msgs::msg::PoseStamped pose,
              float current_speed, float current_steering);
 
         geometry_msgs::msg::PoseStamped get_target_point();
@@ -48,7 +55,8 @@ class Pursuit_Algorithm {
         int fastRound(float x);
         float calculate_desiredSpeed(float preview_curvature);
         float lowPassFilter(float input, float dt);
-        float preview_abs_curvature(lart_msgs::msg::PathSpline path);
+        float preview_abs_curvature(lart_msgs::msg::PathArray path);
+        float calculate_feedforward_accel(const lart_msgs::msg::PathArray &path);
         
         
         // Parameters

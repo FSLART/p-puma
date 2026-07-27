@@ -13,6 +13,9 @@ Control_Algorithm::Control_Algorithm(float missionSpeed, float lookahead_time, f
     this->prevOutput.steering_angle = 0.0f;
     this->prevOutput.rpm = 0;
 
+    //Intialize previous time
+    this->prevTime = rclcpp::Clock().now();
+
     (void)kp; // Unused for this algorithm
     (void)ki; // Unused for this algorithm
     (void)kd; // Unused for this algorithm
@@ -55,6 +58,11 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
 
     //Get the euclidean distance to the target point
     float distance_to_target = std::sqrt(std::pow(this->target_point.pose.position.x-1.15, 2) + std::pow(this->target_point.pose.position.y, 2));
+    
+    // Get the dt since last call
+    rclcpp::Time currentTime = rclcpp::Clock().now();
+    float dt = (currentTime - this->prevTime).seconds();
+    this->prevTime = currentTime;
 
     // Calculate desired speed and limit acceleration
     float abs_curvature = preview_abs_curvature(path);
@@ -81,7 +89,7 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
         steering_angle = atan2(2 * WHEELBASE_M * sin(alpha), distance_to_target);
     }
 
-    control_output.steering_angle = clamp(steering_angle, (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
+    control_output.steering_angle = clamp(lowPassFilter(steering_angle, dt), (float)-MAX_WHEEL_ANGLE_RAD, (float)MAX_WHEEL_ANGLE_RAD);
     control_output.rpm = static_cast<decltype(control_output.rpm)>(desired_rpm_clamped);
 
     RCLCPP_INFO(rclcpp::get_logger("Pursuit_Algorithm"), "steering_angle: %.2f, rpm: %d", control_output.steering_angle, control_output.rpm);
@@ -146,6 +154,13 @@ float Control_Algorithm::calculate_lookahead(float preview_curvature, float spee
     (void)preview_curvature; // Unused parameter
     float look_ahead_distance = this->lookahead_time * speed;
     return look_ahead_distance;
+}
+
+float Control_Algorithm::lowPassFilter(float input, float dt) {
+        if (dt <= 0.0) return prevOutput.steering_angle;  // avoid division by zero
+        float alpha = dt / (this->tau + dt);
+        float output = alpha * input + (1.0 - alpha) * prevOutput.steering_angle;
+        return output;
 }
 
 float Control_Algorithm::calculate_desiredSpeed(float preview_curvature){

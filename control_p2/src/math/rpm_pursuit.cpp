@@ -69,8 +69,6 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
     float desired_speed = calculate_desiredSpeed(abs_curvature);
     float desired_rpm = MS_TO_RPM(desired_speed);
 
-    
-
     float prev_rpm = static_cast<float>(this->prevOutput.rpm);
     float speed_diff = desired_rpm - prev_rpm;
     if (speed_diff > MAX_RPM_DELTA) {

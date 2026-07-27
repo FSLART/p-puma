@@ -77,7 +77,7 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
 
     // Apply PID controller to define the aceleration
     // float acc_cmd = this->pid_controller.compute(desired_speed, current_speed);
-    float acc_cmd = this->pid_controller.compute(desired_speed, current_speed, dt);
+    float acc_cmd = this->pid_controller.compute(desired_speed, current_speed, dt, 0.0);
 
     acc_cmd = clamp(acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
 
@@ -189,9 +189,8 @@ PID_Controller::PID_Controller(float kp, float ki, float kd)
     this->kp = kp;
     this->ki = ki;
     this->kd = kd;
-    error = 0;
-    error_prev = 0;
-    error_sum = 0;
+    error_prev = 0.0;
+    error_sum = 0.0;
 }
 
 // float PID_Controller::compute(float setpoint, float input)
@@ -213,9 +212,11 @@ PID_Controller::PID_Controller(float kp, float ki, float kd)
 //     return output;
 // }
 
-float PID_Controller::compute(float setpoint, float input, float dt)
+float PID_Controller::compute(float setpoint, float input, float dt, float ff_cmd)
 {
-    error = setpoint - input;
+    (void) ff_cmd;
+
+    float error = setpoint - input;
 
     // Integral
     error_sum += error * dt;

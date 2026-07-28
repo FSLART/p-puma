@@ -23,7 +23,6 @@ public:
     // Callbacks
     void state_callback(const lart_msgs::msg::State::SharedPtr msg);
     void mission_callback(const lart_msgs::msg::Mission::SharedPtr msg);
-    void path_callback(const lart_msgs::msg::PathArray::SharedPtr msg);
     void dynamics_callback(const lart_msgs::msg::Dynamics::SharedPtr msg);
     void pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
     void lap_callback(const lart_msgs::msg::SlamStats::SharedPtr msg);
@@ -41,7 +40,6 @@ private:
     rclcpp::Subscription<lart_msgs::msg::State>::SharedPtr state_subscriber;
     rclcpp::Subscription<lart_msgs::msg::Mission>::SharedPtr mission_subscriber;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr position_subscriber;
-    rclcpp::Subscription<lart_msgs::msg::PathArray>::SharedPtr path_subscriber;
     rclcpp::Subscription<lart_msgs::msg::PathArray>::SharedPtr final_path_subscriber;
     rclcpp::Subscription<lart_msgs::msg::Dynamics>::SharedPtr dynamics_subscriber;
     rclcpp::Subscription<lart_msgs::msg::SlamStats>::SharedPtr lap_subscriber;
@@ -52,6 +50,7 @@ protected:
     // Functions
     void dispatchDynamicsCMD();
     void checkTimeStamp();
+    lart_msgs::msg::PathArray buildStraightPath();
 
     // ROS Parameters
     bool sim_mode;
@@ -59,6 +58,7 @@ protected:
     bool target_marker_visible;
     bool fsl_flag;
     bool acc_mode;
+    bool reset_control;
     float fsl_speed;
     float default_max_speed;
     float acc_speed;

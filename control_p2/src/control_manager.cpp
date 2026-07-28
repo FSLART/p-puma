@@ -170,6 +170,10 @@ float ControlManager::get_currentSteering(){
     return this->currentSteering;
 }
 
+float ControlManager::get_missionSpeed(){
+    return this->missionSpeed;
+}
+
 // float ControlManager::get_lookahead_distance(){
 //     return this->lookahead;
 // }

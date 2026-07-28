@@ -33,12 +33,15 @@ ControlP2::ControlP2() : Node("control_node")
     this->declare_parameter<float>("ki", 0.1f);
     this->declare_parameter<float>("kd", 0.05f);
 
+    // Reset control (THIS IS ONLY FOR TUNNING THE PID)
+    this->declare_parameter<bool>("reset_control", false);
+
     this->get_parameter("sim_mode", sim_mode);
     this->get_parameter("log_info", log_info);
     this->get_parameter("target_marker_visible", target_marker_visible);
     this->get_parameter("fsl_flag", fsl_flag);
     this->get_parameter("acc_mode", acc_mode);
-    
+
     this->get_parameter("default_max_speed",default_max_speed);
     this->get_parameter("acc_speed",acc_speed);
     this->get_parameter("skidpad_speed",skidpad_speed);
@@ -52,6 +55,7 @@ ControlP2::ControlP2() : Node("control_node")
     this->get_parameter("ki", ki);
     this->get_parameter("kd", kd);
 
+    this->get_parameter("reset_control", reset_control);
 
     RCLCPP_INFO(this->get_logger(), "Control node initialized with parameters: sim_mode: %d, log_info: %d, target_marker_visible: %d, fsl_flag: %d, acc_mode: %d, fsl_speed: %.2f, default_max_speed: %.2f, acc_speed: %.2f, skidpad_speed: %.2f, ebs_speed: %.2f, lookahead_time: %.2f, tau: %.2f, kv: %.2f, curvature_gain: %.2f, kp: %.2f, ki: %.2f, kd: %.2f",
         sim_mode, log_info, target_marker_visible, fsl_flag, acc_mode, fsl_speed, default_max_speed, acc_speed, skidpad_speed, ebs_speed, lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
@@ -83,9 +87,6 @@ ControlP2::ControlP2() : Node("control_node")
     /*                                  SUBSCRIBERS                                 */
     /*------------------------------------------------------------------------------*/
 
-    path_subscriber = this->create_subscription<lart_msgs::msg::PathArray>(
-        TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));  
-
     final_path_subscriber = this->create_subscription<lart_msgs::msg::PathArray>(
         TOPIC_FINAL_PATH, 10, std::bind(&ControlP2::final_path_callback, this, _1));  
 
@@ -115,7 +116,14 @@ ControlP2::ControlP2() : Node("control_node")
     /*                            CLASS INITIALIZATION                              */
     /*------------------------------------------------------------------------------*/
     control_manager = new ControlManager();
-    
+
+    /*------------------------------------------------------------------------------*/
+    /*                    STRAIGHT LINE PATH INITIALIZATION (PID TUNING)            */
+    /*------------------------------------------------------------------------------*/
+    // The path subscriber is disabled on this branch: the control node always
+    // drives a fixed 10m straight line so the PID gains can be tuned in isolation.
+    this->control_manager->set_path(this->buildStraightPath());
+
     /*------------------------------------------------------------------------------*/
     /*                        SIMULATION MODE INITIALIZATION                        */
     /*------------------------------------------------------------------------------*/
@@ -200,15 +208,6 @@ void ControlP2::lap_callback(const lart_msgs::msg::SlamStats::SharedPtr msg)
     }
 }
 
-void ControlP2::path_callback(const lart_msgs::msg::PathArray::SharedPtr msg)
-{
-    if(this->finalPathReceived){
-        return;
-    }
-    // save current path
-    this->control_manager->set_path(*msg);
-}
-
 void ControlP2::final_path_callback(const lart_msgs::msg::PathArray::SharedPtr msg){
     if(!this->finalPathReceived){
         this->finalPathReceived = true;
@@ -232,6 +231,35 @@ void ControlP2::pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr m
 
 void ControlP2::dispatchDynamicsCMD()
 {
+    // PID tuning: reset_control safe-stop/reset sequence.
+    // While reset_control is true, brake the car to a stop and then tear down
+    // the algorithm (dropping all PID/filter state) without killing the node,
+    // so kp/ki/kd can be changed and the algorithm relaunched via parameters.
+    if(this->reset_control){
+        lart_msgs::msg::DynamicsCMD stop_cmd = lart_msgs::msg::DynamicsCMD();
+        stop_cmd.rpm = 0;
+        stop_cmd.steering_angle = 0.0;
+        stop_cmd.acc_cmd = -1.0;
+        stop_cmd.header.stamp = rclcpp::Clock().now();
+
+        if(this->control_manager->get_currentSpeed() < 0.1){
+            // Car is stopped: release the brake and tear down the algorithm.
+            stop_cmd.acc_cmd = 0.0;
+
+            if(this->control_manager->get_algorithm() != nullptr){
+                RCLCPP_WARN(this->get_logger(), "reset_control: vehicle stopped, terminating control algorithm");
+                this->control_manager->terminate_algorithm();
+            }
+        }
+
+        if(this->acc_mode){
+            dynamics_torque_publisher->publish(stop_cmd);
+        }else{
+            dynamics_rpm_publisher->publish(stop_cmd);
+        }
+        return;
+    }
+
     // Check if we have received the first driving signal and if the mission has been set
     if(!this->ready || !this->missionSet ){
         if(!this->drivingSignalTimeStamp.has_value())
@@ -243,6 +271,13 @@ void ControlP2::dispatchDynamicsCMD()
     if(this->control_manager->get_currentPath().points.empty()){
         RCLCPP_WARN(this->get_logger(), "No path received yet");
         return;
+    }
+
+    // Coming out of a reset_control cycle: relaunch the algorithm with the
+    // (possibly just-tuned) kp/ki/kd values.
+    if(this->control_manager->get_algorithm() == nullptr){
+        RCLCPP_WARN(this->get_logger(), "Reinitializing control algorithm after reset with kp: %f, ki: %f, kd: %f", kp, ki, kd);
+        this->control_manager->initialize_algorithm(this->control_manager->get_missionSpeed(), lookahead_time, tau, kv, curvature_gain, kp, ki, kd);
     }
 
     lart_msgs::msg::DynamicsCMD control_output = this->control_manager->getDynamicsCMD();
@@ -364,12 +399,36 @@ rcl_interfaces::msg::SetParametersResult ControlP2::parametersCallback(const std
             this->control_manager->set_kd(kd);
             RCLCPP_INFO(this->get_logger(), "kd set to: %f", kd);
         }
+        else if (name == "reset_control") {
+            reset_control = param.as_bool();
+            RCLCPP_WARN(this->get_logger(), "reset_control set to: %d", reset_control);
+        }
     }
 
     RCLCPP_INFO(this->get_logger(), "Parameters updated at runtime");
     auto result = rcl_interfaces::msg::SetParametersResult();
     result.successful = true;
     return result;
+}
+
+lart_msgs::msg::PathArray ControlP2::buildStraightPath()
+{
+    constexpr float path_length = 10.0f;
+    constexpr float resolution = 0.1f;
+
+    lart_msgs::msg::PathArray path;
+    path.header.frame_id = "world";
+
+    for(float distance = 0.0f; distance <= path_length + 1e-3f; distance += resolution){
+        lart_msgs::msg::PathPoint point;
+        point.x = distance;
+        point.y = 0.0f;
+        point.curvature = 0.0f;
+        point.distance = distance;
+        path.points.push_back(point);
+    }
+
+    return path;
 }
 
 void ControlP2::checkTimeStamp()

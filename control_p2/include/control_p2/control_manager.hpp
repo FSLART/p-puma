@@ -30,6 +30,7 @@ class ControlManager {
         geometry_msgs::msg::PoseStamped get_currentPose();
         float get_currentSpeed();
         float get_currentSteering();
+        float get_missionSpeed();
         visualization_msgs::msg::Marker get_target_marker();
         void log_info();
         void terminate_algorithm();
@@ -41,8 +42,8 @@ class ControlManager {
         std::unique_ptr<Control_Algorithm> algorithm;
     protected:
         // Parameters
-        float currentSpeed;
-        float currentSteering;
+        float currentSpeed = 0.0f;
+        float currentSteering = 0.0f;
         float missionSpeed;
         geometry_msgs::msg::PoseStamped currentPose;
         lart_msgs::msg::PathArray currentPath;

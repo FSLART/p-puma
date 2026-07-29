@@ -17,4 +17,4 @@ puma_node:
     kp: 0.7
     ki: 0.5
     kd: 0.0
-    reset_control: false
+    reset_control: true

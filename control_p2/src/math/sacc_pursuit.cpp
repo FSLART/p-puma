@@ -59,6 +59,7 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
     rclcpp::Time currentTime = rclcpp::Clock().now();
     float dt = (currentTime - this->prevTime).seconds();
     this->prevTime = currentTime;
+    dt = clamp(dt, 0.0f, MAX_CONTROL_DT);
 
     // Get absolute curvature of the path
     float abs_curvature = preview_abs_curvature(path);
@@ -68,16 +69,15 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
 
     control_output.target_ms = desired_speed;
 
-    //Limit change of desired speed per iteration
-    float max_change = 1.0f; // Max change in speed per iteration
-    float speed_diff = desired_speed - current_speed;
-    if (speed_diff > max_change) {
-        desired_speed = current_speed + max_change;
-    }
+    // Rate-limit the speed setpoint (SPEED_RAMP_UP/DOWN m/s2). The old limit
+    // (setpoint <= current speed + 1 m/s) let a 1 m/s error through every
+    // cycle, which with kp 0.7 meant ~70 % current from standstill.
+    this->ramped_speed = clamp(desired_speed,
+        this->ramped_speed - SPEED_RAMP_DOWN * dt,
+        this->ramped_speed + SPEED_RAMP_UP * dt);
 
     // Apply PID controller to define the aceleration
-    // float acc_cmd = this->pid_controller.compute(desired_speed, current_speed);
-    float acc_cmd = this->pid_controller.compute(desired_speed, current_speed, dt, 0.0);
+    float acc_cmd = this->pid_controller.compute(this->ramped_speed, current_speed, dt, 0.0);
 
     acc_cmd = clamp(acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
 
@@ -201,7 +201,7 @@ float PID_Controller::compute(float setpoint, float input, float dt, float ff_cm
     error_sum += error * dt;
 
     // Derivative
-    float derivative = (error - error_prev) / dt;
+    float derivative = (dt > 0.0f) ? (error - error_prev) / dt : 0.0f;
 
     // PID output
     float output =

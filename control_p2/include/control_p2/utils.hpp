@@ -68,8 +68,21 @@
 #define MAX_MS_DELTA 0.05f
 
 // PID CONTROLLER SIGNAL LIMITS
-#define MIN_SIG_VAL -1.0f
-#define MAX_SIG_VAL 1.0f
+// acc_cmd is the fraction of max motor current (VCU torque target -1..1).
+// On the ground 1.0 is ~13-20 m/s2 below ~15 m/s (Milagres 13-10 manual
+// runs), so +-0.5 still allows ~7 m/s2 while capping a runaway loop.
+#define MIN_SIG_VAL -0.5f
+#define MAX_SIG_VAL 0.5f
+
+// SPEED SETPOINT RAMP [m/s2]: the PID tracks a setpoint that moves towards
+// the desired speed at most this fast, so the acceleration does not depend
+// on the loop gain (or on the car being on the ground or in the air).
+#define SPEED_RAMP_UP 2.0f
+#define SPEED_RAMP_DOWN 3.0f
+
+// Upper bound on the control period used by the PID/ramp [s]; avoids a large
+// integral/ramp jump on the first call or after a stall.
+#define MAX_CONTROL_DT 0.1f
 
 
 #endif

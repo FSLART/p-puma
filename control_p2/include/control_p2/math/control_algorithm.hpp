@@ -70,6 +70,7 @@ class Control_Algorithm {
         float tau;
         float kv;
         float curvature_gain;
+        float ramped_speed = 0.0f;   // rate-limited speed setpoint [m/s]
         VehicleModel vehicle = VehicleModel();
 
         // PID Controller

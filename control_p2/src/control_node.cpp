@@ -1,4 +1,5 @@
 #include "control_p2/control_node.hpp"
+#include <cmath>
 
 using std::placeholders::_1;
 
@@ -83,7 +84,9 @@ ControlP2::ControlP2() : Node("control_node")
     /*                                  SUBSCRIBERS                                 */
     /*------------------------------------------------------------------------------*/
 
-    path_subscriber = this->create_subscription<lart_msgs::msg::PathArray>(
+    // The path planner publishes PathSpline on TOPIC_PATH; it is converted to
+    // PathArray in path_callback before reaching the control algorithm.
+    path_subscriber = this->create_subscription<lart_msgs::msg::PathSpline>(
         TOPIC_PATH, 10, std::bind(&ControlP2::path_callback, this, _1));  
 
     final_path_subscriber = this->create_subscription<lart_msgs::msg::PathArray>(
@@ -200,13 +203,40 @@ void ControlP2::lap_callback(const lart_msgs::msg::SlamStats::SharedPtr msg)
     }
 }
 
-void ControlP2::path_callback(const lart_msgs::msg::PathArray::SharedPtr msg)
+// Convert a PathSpline (poses[] + parallel curvature[]) into the PathArray
+// format the control algorithms expect. Velocity is left at 0 since
+// PathSpline does not carry it; distance is the cumulative arc length.
+static lart_msgs::msg::PathArray spline_to_array(const lart_msgs::msg::PathSpline & spline)
+{
+    lart_msgs::msg::PathArray array;
+    array.points.reserve(spline.poses.size());
+
+    float distance = 0.0f;
+    for(size_t i = 0; i < spline.poses.size(); i++){
+        lart_msgs::msg::PathPoint point;
+        point.x = spline.poses[i].pose.position.x;
+        point.y = spline.poses[i].pose.position.y;
+        point.curvature = (i < spline.curvature.size()) ? spline.curvature[i] : 0.0f;
+
+        if(i > 0){
+            float dx = point.x - array.points[i - 1].x;
+            float dy = point.y - array.points[i - 1].y;
+            distance += std::sqrt(dx * dx + dy * dy);
+        }
+        point.distance = distance;
+
+        array.points.push_back(point);
+    }
+    return array;
+}
+
+void ControlP2::path_callback(const lart_msgs::msg::PathSpline::SharedPtr msg)
 {
     if(this->finalPathReceived){
         return;
     }
-    // save current path
-    this->control_manager->set_path(*msg);
+    // save current path (converted from PathSpline)
+    this->control_manager->set_path(spline_to_array(*msg));
 }
 
 void ControlP2::final_path_callback(const lart_msgs::msg::PathArray::SharedPtr msg){

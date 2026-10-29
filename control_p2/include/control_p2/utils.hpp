@@ -80,6 +80,13 @@
 #define SPEED_RAMP_UP 2.0f
 #define SPEED_RAMP_DOWN 3.0f
 
+// ACC_CMD SLEW LIMIT [fraction of max current per second]: acc_cmd can rise
+// at most this fast (0 -> 0.5 takes 0.5 s, ~15 m/s3 on the ground) and fall
+// faster so releasing/braking is not delayed much. Safety net on top of the
+// speed ramp, catches steps from param changes, re-init or path jumps.
+#define ACC_CMD_SLEW_UP 1.0f
+#define ACC_CMD_SLEW_DOWN 3.0f
+
 // Upper bound on the control period used by the PID/ramp [s]; avoids a large
 // integral/ramp jump on the first call or after a stall.
 #define MAX_CONTROL_DT 0.1f

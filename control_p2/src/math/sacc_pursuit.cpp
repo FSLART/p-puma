@@ -81,6 +81,11 @@ lart_msgs::msg::DynamicsCMD Control_Algorithm::calculate_control(lart_msgs::msg:
 
     acc_cmd = clamp(acc_cmd, MIN_SIG_VAL, MAX_SIG_VAL);
 
+    // Slew-limit the command so it never jumps (starts from 0 on the first call)
+    acc_cmd = clamp(acc_cmd,
+        this->prevOutput.acc_cmd - ACC_CMD_SLEW_DOWN * dt,
+        this->prevOutput.acc_cmd + ACC_CMD_SLEW_UP * dt);
+
     float steering_angle = 0.0;
 
     if(abs(this->target_point.pose.position.y) >= 0.01){
